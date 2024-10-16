@@ -13,6 +13,10 @@ public class Triangle extends Figure implements Printable {
             throw new InvalidDataException("Wymiary boków musza być większe od 0.");
         }
 
+        if (a + b <= c || a + c <= b || b + c <= a) {
+            throw new InvalidDataException("Suma długości dwóch boków musi być większa od długości trzeciego.");
+        }
+
         this.a = a;
         this.b = b;
         this.c = c;

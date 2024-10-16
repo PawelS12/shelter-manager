@@ -87,10 +87,10 @@ public class Main {
                         System.out.println("1. Trójkąt");
                         System.out.println("2. Okrąg");
                         System.out.println("3. Prostokąt");
-                        int baseChoice = scanner.nextInt();
+                        int number2 = scanner.nextInt();
                         Figure baseFigure = null;
 
-                        switch (baseChoice) {
+                        switch (number2) {
                             case 1: {
                                 System.out.println("\nPodaj wymiary trójkąta: ");
                                 System.out.print("bok a: ");
@@ -111,10 +111,10 @@ public class Main {
                             case 3: {
                                 System.out.println("\nPodaj wymiary prostokąta: ");
                                 System.out.print("bok a: ");
-                                double width = scanner.nextDouble();
+                                double a = scanner.nextDouble();
                                 System.out.print("bok b: ");
-                                double height = scanner.nextDouble();
-                                baseFigure = new Rectangle(width, height);
+                                double b = scanner.nextDouble();
+                                baseFigure = new Rectangle(a, b);
                                 break;
                             }
                             default: {
@@ -124,9 +124,9 @@ public class Main {
                         }
                         if (baseFigure != null) {
                             System.out.print("Podaj wysokość ostrosłupa: ");
-                            double pyramidHeight = scanner.nextDouble();
+                            double h = scanner.nextDouble();
                             System.out.println();
-                            Pyramid pyramid = new Pyramid(baseFigure, pyramidHeight);
+                            Pyramid pyramid = new Pyramid(baseFigure, h);
                             pyramid.print();
                             System.out.println("Pole powierzchni: " + pyramid.calculateArea());
                             System.out.println("Objętość: " + pyramid.calculateVolume());
