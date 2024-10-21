@@ -4,15 +4,43 @@ public class Animal implements Comparable<Animal> {
     private AnimalCondition condition;
     private int age;
     private double price;
-    private ComparisonType comparisonType;
+    private boolean isAdopted;
 
-    public Animal(String name, String species, AnimalCondition condition, int age, double price, ComparisonType comparisonType) {
+    public Animal(String name, String species, AnimalCondition condition, int age, double price) {
         this.name = name;
         this.species = species;
         this.condition = condition;
         this.age = age;
         this.price = price;
-        this.comparisonType = comparisonType;
+        this.isAdopted = false;
+    }
+
+    public void setAdopted() {
+        isAdopted = true;
+    }
+
+    public void setCondition(AnimalCondition condition) {
+        this.condition = condition;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public AnimalCondition getCondition() {
+        return this.condition;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public double getPrice() {
+        return this.price;
+    }
+
+    public String getSpecies() {
+        return this.species;
     }
 
     public void Print() {
@@ -25,15 +53,17 @@ public class Animal implements Comparable<Animal> {
             return 1;
         }
 
-        switch (comparisonType) {
-            case NAME:
-                return this.name.compareTo(other.name);
-            case SPECIES:
-                return this.species.compareTo(other.species);
-            case AGE:
-                return Integer.compare(this.age, other.age);
-            default:
-                throw new IllegalStateException("Unexpected value: " + comparisonType);
+        int nameComparison = this.name.compareTo(other.name);
+        if (nameComparison != 0) {
+            return nameComparison;
         }
+
+        int speciesComparison = this.species.compareTo(other.species);
+        if (speciesComparison != 0) {
+            return speciesComparison;
+        }
+
+        return Integer.compare(this.age, other.age);
     }
+
 }
