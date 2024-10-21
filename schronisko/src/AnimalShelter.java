@@ -45,11 +45,12 @@ public class AnimalShelter {
         return removed;
     }
 
-    public boolean getAnimal(Animal animal) {
+    public boolean getAnimal(Animal animal, Student student) {
         for (Animal existingAnimal : animalList) {
             if (existingAnimal.compareTo(animal) == 0) {
                 existingAnimal.setAdopted();
                 animalList.remove(existingAnimal);
+                student.getAnimals().add(existingAnimal);
 
                 System.out.println("Zwierzę zostało zaadoptowane.");
                 return true;

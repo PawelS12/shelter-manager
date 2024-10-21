@@ -81,5 +81,10 @@ public class Main {
 
         manager.summary();
 
+        Student student = new Student("Paweł", "Socała");
+        shelter.getAnimal(animal_3, student);
+        shelter.getAnimal(animal_5, student);
+        student.displayAnimals();
+
     }
 }
