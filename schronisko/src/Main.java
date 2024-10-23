@@ -17,6 +17,12 @@ public class Main {
         Animal cat = new Animal("Kasia", "Kot", AnimalCondition.chore, 3, 500.0);
         Animal rabbit = new Animal("Marysia", "Królik", AnimalCondition.kwarantanna, 1, 400.0);
 
+        System.out.println("Stworzone zwierzęta: ");
+        dog.Print();
+        cat.Print();
+        rabbit.Print();
+        System.out.println();
+
         // Dodanie zwierząt do schroniska
         schronisko1.addAnimal(dog);
         schronisko1.addAnimal(cat);

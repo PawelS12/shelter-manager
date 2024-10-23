@@ -97,23 +97,13 @@ public class AnimalShelter {
 
     public List<Animal> sortByName() {
         List<Animal> sortedList = new ArrayList<>(animalList);
-        Collections.sort(sortedList, new Comparator<Animal>() {
-            @Override
-            public int compare(Animal animal1, Animal animal2) {
-                return animal1.getName().compareTo(animal2.getName());
-            }
-        });
+        Collections.sort(sortedList, Comparator.comparing(Animal::getName));
         return sortedList;
     }
 
     public List<Animal> sortByPrice() {
         List<Animal> sortedList = new ArrayList<>(animalList);
-        Collections.sort(sortedList, new Comparator<Animal>() {
-            @Override
-            public int compare(Animal animal1, Animal animal2) {
-                return Double.compare(animal1.getPrice(), animal2.getPrice());
-            }
-        });
+        Collections.sort(sortedList, Comparator.comparingDouble(Animal::getPrice));
         return sortedList;
     }
 
@@ -159,12 +149,7 @@ public class AnimalShelter {
             return null;
         }
 
-        return Collections.max(animalList, new Comparator<Animal>() {
-            @Override
-            public int compare(Animal a1, Animal a2) {
-                return Double.compare(a1.getPrice(), a2.getPrice());
-            }
-        });
+        return Collections.max(animalList, Comparator.comparingDouble(Animal::getPrice));
     }
 
 }
