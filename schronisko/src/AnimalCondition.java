@@ -1,3 +1,3 @@
 public enum AnimalCondition {
-    ZDROWE, CHORE, W_TRAKCIE_ADOPCJI, KWARANTANNA;
+    zdrowe, chore, w_trakcie_adopcji, kwarantanna;
 }

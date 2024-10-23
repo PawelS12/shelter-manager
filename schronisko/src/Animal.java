@@ -44,7 +44,7 @@ public class Animal implements Comparable<Animal> {
     }
 
     public void Print() {
-        System.out.println("Animal: " + name + ", " + species + ", " + condition + ", " + age + ", " + price );
+        System.out.println("Imię: " + name + " | gatunek: " + species + " | stan: " + condition + " | wiek: " + age + " | cena: " + price );
     }
 
     @Override

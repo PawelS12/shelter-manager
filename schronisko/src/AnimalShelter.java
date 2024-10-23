@@ -127,7 +127,7 @@ public class AnimalShelter {
 
         for (Animal animal : animalList) {
             if (nameComparator.compare(animal, new Animal(name, null, null, 0, 0)) == 0) {
-                return animal.getName(); // Zwraca imię, jeśli zwierzę zostało znalezione
+                return animal.getName();
             }
         }
         System.err.println("Zwierzę o imieniu " + name + " nie zostało znalezione.");
@@ -147,7 +147,7 @@ public class AnimalShelter {
     }
 
     public void summary() {
-        System.out.println("Wsyzstkie zwierzęta w schonisku: ");
+        System.out.println("Wszystkie zwierzęta w schonisku: ");
         for (Animal animal : animalList) {
             animal.Print();
         }

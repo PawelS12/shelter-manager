@@ -3,88 +3,114 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
 
-        Animal animal_1 = new Animal("Pawel", "Kogut", AnimalCondition.KWARANTANNA, 221, 50001);
-        animal_1.Print();
-        Animal animal_2 = new Animal("Kawel", "Pies", AnimalCondition.KWARANTANNA, 221, 50001);
-        animal_2.Print();
-        Animal animal_3 = new Animal("Kasia", "Kaczka", AnimalCondition.CHORE, 21, 5000);
-        animal_3.Print();
-        Animal animal_4 = new Animal("bartek", "Kaczka", AnimalCondition.CHORE, 21, 5000);
-        animal_4.Print();
-        Animal animal_5 = new Animal("Mama", "Kaczka", AnimalCondition.CHORE, 21, 5000);
-        animal_5.Print();
-        Animal animal_6 = new Animal("Tata", "Kaczka", AnimalCondition.CHORE, 21, 5000);
-        animal_6.Print();
-        Animal animal_7 = new Animal("on", "Kaczka", AnimalCondition.CHORE, 21, 5000);
-        animal_7.Print();
+        ShelterManager shelterManager = new ShelterManager();
 
+        // Stworzenie schronisk
+        shelterManager.addShelter("Schronisko1", 25);
+        shelterManager.addShelter("Schronisko2", 15);
+        System.out.println();
 
-        AnimalShelter shelter = new AnimalShelter("Szkoła", 5);
-        AnimalShelter shelter2 = new AnimalShelter("buda", 5);
-        shelter.addAnimal(animal_1);
-        shelter.addAnimal(animal_2);
-        shelter.addAnimal(animal_3);
-        shelter.addAnimal(animal_4);
-        shelter.addAnimal(animal_5);
-        shelter.addAnimal(animal_6);
-        shelter.addAnimal(animal_7);
+        AnimalShelter schronisko1 = shelterManager.getShelter("Schronisko1");
 
-//        shelter.removeAnimal(animal_1);
-//        shelter.getAnimal(animal_2);
+        // Stworzenie zwierząt
+        Animal dog = new Animal("Pluto", "Pies", AnimalCondition.zdrowe, 4, 600.0);
+        Animal cat = new Animal("Kasia", "Kot", AnimalCondition.chore, 3, 500.0);
+        Animal rabbit = new Animal("Marysia", "Królik", AnimalCondition.kwarantanna, 1, 400.0);
 
-        System.out.println("Ilość zwierząt na kwarantannie: " + shelter.countByCondition(AnimalCondition.KWARANTANNA));
+        // Dodanie zwierząt do schroniska
+        schronisko1.addAnimal(dog);
+        schronisko1.addAnimal(cat);
+        schronisko1.addAnimal(rabbit);
 
-        List<Animal> sortedAnimals  = shelter.sortByName();
-        for (Animal animal : sortedAnimals) {
-            System.out.println(animal.getName());
+        // Dodanie tego samego zwierzecia - błąd
+        schronisko1.addAnimal(dog);
+
+        // Zmiana stanu zwierzecia
+        schronisko1.changeCondition(cat, AnimalCondition.zdrowe);
+
+        // Zmiana wieku zwierzęcia
+        schronisko1.changeAge(rabbit, 3);
+
+        // Wyliczenie zdrowych zwierząt
+        int healthyCount = schronisko1.countByCondition(AnimalCondition.zdrowe);
+        System.out.println("Ilość zdrowych zwierząt: " + healthyCount);
+        System.out.println();
+
+        // Posortowanie zwierząt po imieniu
+        List<Animal> sortedByName = schronisko1.sortByName();
+        System.out.println("Zwierzęta posortowane po imieniu:");
+        for (Animal a : sortedByName) {
+            a.Print();
         }
+        System.out.println();
 
-        String searchName = "Kasia";
-        String foundAnimalName = shelter.search(searchName);
+        // Posortowanie zwierząt po cenie
+        List<Animal> sortedByPrice = schronisko1.sortByPrice();
+        System.out.println("Zwierzęta posortowane po cenie:");
+        for (Animal a : sortedByPrice) {
+            a.Print();
+        }
+        System.out.println();
+
+        // Wyszukanie zwierzęcia po imieniu
+        String foundAnimalName = schronisko1.search("Pluto");
         if (foundAnimalName != null) {
             System.out.println("Znaleziono zwierzę: " + foundAnimalName);
-        } else {
-            System.out.println("Nie znaleziono zwierzęcia o imieniu " + searchName);
         }
+        System.out.println();
 
-
-        String searchFragment = "awe";
-        List<Animal> foundAnimals = shelter.searchPartial(searchFragment);
-
-        if (!foundAnimals.isEmpty()) {
-            System.out.println("Znalezione zwierzęta:");
-            for (Animal animal : foundAnimals) {
-                System.out.println(animal.getName() + " - Gatunek: " + animal.getSpecies());
-            }
-        } else {
-            System.out.println("Nie znaleziono zwierząt pasujących do fragmentu: " + searchFragment);
+        // Wyszukanie zwierzęcia po fragmencie
+        List<Animal> matchingAnimals = schronisko1.searchPartial("ka");
+        System.out.println("Zwierzęta z fragmentem 'ka':");
+        for (Animal a : matchingAnimals) {
+            a.Print();
         }
+        System.out.println();
 
-        shelter.summary();
+        // Wyświetlenie podsumowania schroniska
+        schronisko1.summary();
+        System.out.println();
 
-        Animal mostExpensiveAnimal = shelter.max();
+        // Znalezioenie najdroższego zwierzęcia
+        Animal mostExpensiveAnimal = schronisko1.max();
         if (mostExpensiveAnimal != null) {
-            System.out.println("Najdroższe zwierzę: " + mostExpensiveAnimal.getName() + " - Cena: " + mostExpensiveAnimal.getPrice());
+            System.out.println("Najdroższe zwierzę:");
+            mostExpensiveAnimal.Print();
         }
+        System.out.println();
 
-        ShelterManager manager = new ShelterManager();
-        manager.addShelter("aass",12);
-        manager.removeShelter("ass");
-        manager.addShelter("12", 123);
+        // Usunięcie zwierzęcia
+        boolean removed = schronisko1.removeAnimal(dog);
+        System.out.println("Usunięto zwierzę: " + removed);
+        System.out.println();
 
-        List<String> emptyShelters = manager.findEmpty();
-        if (emptyShelters.isEmpty()) {
-            System.out.println("Brak pustych schronisk.");
-        } else {
-            System.out.println("Puste schroniska: " + emptyShelters);
-        }
-
-        manager.summary();
-
+        // Stworzenie studenta
         Student student = new Student("Paweł", "Socała");
-        shelter.getAnimal(animal_3, student);
-        shelter.getAnimal(animal_5, student);
+
+        // Adopcja zwierzęcia
+        boolean adopted = schronisko1.getAnimal(cat, student);
+
+        // Wyświetlenie zwierząd adoptopwanych przez danego stuenta
+        System.out.println("Zwierzęta adoptowane przez studenta: ");
         student.displayAnimals();
+        System.out.println();
+
+        // Znalezioenie pustych schronisk
+        List<String> emptyShelters = shelterManager.findEmpty();
+        System.out.print("Puste schroniska: ");
+        for (String shelterName : emptyShelters) {
+            System.out.println(shelterName);
+        }
+        System.out.println();
+
+        // Wyświetlenie podsumowanie managera schronisk
+        shelterManager.summary();
+        System.out.println();
+
+        // Usunięcie schroniska przez managera schronisk
+        boolean shelterRemoved = shelterManager.removeShelter("Schronisko1");
+        System.out.println("Usunięto schronisko: " + shelterRemoved);
+        System.out.println();
 
     }
 }

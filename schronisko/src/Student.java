@@ -18,7 +18,7 @@ public class Student {
 
     public void displayAnimals() {
         for (Animal a : animals) {
-            System.out.println(a.getName());
+            a.Print();
         }
     }
 }
