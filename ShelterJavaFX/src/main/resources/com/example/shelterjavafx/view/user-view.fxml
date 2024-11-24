@@ -66,11 +66,11 @@
                   </TableColumn>
                </columns>
             </TableView>
-            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="160.0" layoutX="-23.0" layoutY="-118.0" stroke="BLACK" strokeType="INSIDE" width="724.0" />
+            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#0600ff" height="160.0" layoutX="-23.0" layoutY="-118.0" stroke="BLACK" strokeType="INSIDE" width="724.0" />
             <TextField fx:id="shelterFilterTextField" layoutX="7.0" layoutY="7.0" onAction="#applyShelterFilters" promptText="Search shelter" style="-fx-border-color: #000000;" />
             <TextField fx:id="animalFilterTextField" layoutX="176.0" layoutY="7.0" onAction="#applyAnimalFilters" promptText="Search animal" style="-fx-border-color: #000000;" />
-            <ComboBox fx:id="stateComboBox" layoutX="486.0" layoutY="7.0" prefWidth="150.0" promptText="Choose condition" style="-fx-background-color: #1e90ff; -fx-border-color: #000000;" />
-            <Button fx:id="filterButton" layoutX="638.0" layoutY="7.0" mnemonicParsing="false" onAction="#applyAnimalFiltersByCondition" prefHeight="26.0" prefWidth="54.0" style="-fx-background-color: #1e90ff; -fx-border-color: #000000;" text="Search" />
+            <ComboBox fx:id="stateComboBox" layoutX="486.0" layoutY="7.0" prefWidth="150.0" promptText="Choose condition" style="-fx-background-color: #0600ff; -fx-border-color: #000000;" />
+            <Button fx:id="filterButton" layoutX="638.0" layoutY="7.0" mnemonicParsing="false" onAction="#applyAnimalFiltersByCondition" prefHeight="26.0" prefWidth="54.0" style="-fx-background-color: #0600ff; -fx-border-color: #000000;" text="Search" />
          </children>
       </AnchorPane>
    </center>
@@ -78,7 +78,7 @@
    <left>
       <AnchorPane prefHeight="500.0" prefWidth="142.0" style="-fx-background-color: #0600FF;" BorderPane.alignment="CENTER">
          <children>
-            <Button layoutX="21.0" layoutY="254.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Sort shelters" textFill="WHITE" onAction="#handleSortSheltersByMaxCapacity" />
+            <Button layoutX="21.0" layoutY="254.0" mnemonicParsing="false" onAction="#handleSortSheltersByMaxCapacity" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Sort shelters" textFill="WHITE" />
             <Button layoutX="5.0" layoutY="7.0" mnemonicParsing="false" onAction="#handleBackButtonClick" prefHeight="34.0" prefWidth="37.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;">
                <font>
                   <Font name="System Bold" size="12.0" />
@@ -91,7 +91,7 @@
                   </ImageView>
                </graphic>
             </Button>
-            <Button layoutX="21.0" layoutY="218.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Adopt animal" textFill="WHITE" onAction="#handleAdoptButtonClick"/>
+            <Button layoutX="21.0" layoutY="218.0" mnemonicParsing="false" onAction="#handleAdoptButtonClick" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Adopt animal" textFill="WHITE" />
          </children>
          <effect>
             <DropShadow />

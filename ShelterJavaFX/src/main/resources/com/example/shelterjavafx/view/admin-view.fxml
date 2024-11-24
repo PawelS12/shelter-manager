@@ -67,11 +67,11 @@
                         </TableColumn>
                     </columns>
                 </TableView>
-            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="160.0" layoutX="-23.0" layoutY="-118.0" stroke="BLACK" strokeType="INSIDE" width="724.0" />
-            <TextField fx:id="shelterFilterTextField" layoutX="7.0" layoutY="7.0" promptText="Search shelter" style="-fx-border-color: #000000;" onAction="#applyShelterFilters"/>
-            <TextField fx:id="animalFilterTextField" layoutX="176.0" layoutY="7.0" promptText="Search animal" style="-fx-border-color: #000000;" onAction="#applyAnimalFilters"/>
-            <ComboBox fx:id="stateComboBox" layoutX="486.0" layoutY="7.0" prefWidth="150.0" promptText="Choose condition" style="-fx-background-color: #1e90ff; -fx-border-color: #000000;" />
-            <Button fx:id="filterButton" layoutX="638.0" layoutY="7.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="54.0" style="-fx-background-color: #1e90ff; -fx-border-color: #000000;" text="Search" onAction="#applyAnimalFiltersByCondition"/>
+            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#0600ff" height="160.0" layoutX="-23.0" layoutY="-118.0" stroke="BLACK" strokeType="INSIDE" width="724.0" />
+            <TextField fx:id="shelterFilterTextField" layoutX="7.0" layoutY="7.0" onAction="#applyShelterFilters" promptText="Search shelter" style="-fx-border-color: #000000;" />
+            <TextField fx:id="animalFilterTextField" layoutX="176.0" layoutY="7.0" onAction="#applyAnimalFilters" promptText="Search animal" style="-fx-border-color: #000000;" />
+            <ComboBox fx:id="stateComboBox" layoutX="486.0" layoutY="7.0" prefWidth="150.0" promptText="Choose condition" style="-fx-background-color: #0600ff; -fx-border-color: #000000;" />
+            <Button fx:id="filterButton" layoutX="638.0" layoutY="7.0" mnemonicParsing="false" onAction="#applyAnimalFiltersByCondition" prefHeight="26.0" prefWidth="54.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Search" />
             </children>
         </AnchorPane>
     </center>
