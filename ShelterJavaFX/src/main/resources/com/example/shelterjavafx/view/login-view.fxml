@@ -3,47 +3,41 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.shelterjavafx.controller.LoginViewController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="842.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.shelterjavafx.controller.LoginViewController">
    <left>
-      <AnchorPane prefHeight="500.0" prefWidth="350.0" style="-fx-background-color: #0600ff;" BorderPane.alignment="CENTER">
+      <AnchorPane prefHeight="500.0" prefWidth="421.0" style="-fx-background-color: #0600FF;" BorderPane.alignment="CENTER">
          <children>
-            <Text fill="WHITE" layoutX="56.0" layoutY="129.0" strokeType="OUTSIDE" strokeWidth="0.0" text="CREATE ACCOUNT" textAlignment="CENTER" wrappingWidth="269.18308448791504">
+            <Text fill="WHITE" layoutX="145.0" layoutY="204.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WELCOME!">
                <font>
-                  <Font name="Segoe UI Bold" size="24.0" />
+                  <Font name="System Bold" size="25.0" />
                </font>
             </Text>
-            <TextField fx:id="registerUsernameField" layoutX="101.0" layoutY="180.0" promptText="User Name" style="-fx-background-color: #0600ff; -fx-border-color: #FFF;" />
-            <PasswordField fx:id="registerPasswordField" layoutX="101.0" layoutY="226.0" promptText="Password" style="-fx-background-color: #0600ff; -fx-border-color: #FFF;" />
-            <PasswordField fx:id="registerRepeatPasswordField" layoutX="101.0" layoutY="270.0" promptText="Repeat Password" style="-fx-background-color: #0600ff; -fx-border-color: #FFF;" />
-            <Button fx:id="registerButton" layoutX="135.0" layoutY="332.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="78.0" style="-fx-background-color: #0599ff;" text="Register" textAlignment="CENTER" textFill="WHITE" />
-            <ImageView fitHeight="30.0" fitWidth="35.0" layoutX="46.0" layoutY="105.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@../assets/user-plus.png" />
-               </image>
-            </ImageView>
+            <Text fill="WHITE" layoutX="112.0" layoutY="230.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Don't have an account?">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+            </Text>
+            <Button layoutX="121.0" layoutY="257.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="178.0" style="-fx-background-color: #0580FF;" text="CREATE ACCOUNT" textFill="WHITE" />
          </children>
       </AnchorPane>
    </left>
-   <center>
-      <AnchorPane prefHeight="500.0" prefWidth="355.0" BorderPane.alignment="CENTER">
+   <right>
+      <AnchorPane prefHeight="200.0" prefWidth="421.0" BorderPane.alignment="CENTER">
          <children>
-            <TextField fx:id="usernameField" alignment="TOP_LEFT" layoutX="107.0" layoutY="209.0" promptText="User Name" style="-fx-background-color: transparent; -fx-border-color: #0859ff;" />
-            <PasswordField fx:id="passwordField" layoutX="107.0" layoutY="253.0" promptText="Password" style="-fx-background-color: transparent; -fx-border-color: #0859ff;" />
-            <Text layoutX="69.0" layoutY="158.0" strokeType="OUTSIDE" strokeWidth="0.0" text="SHELTER MANAGER" textAlignment="CENTER">
+            <Text layoutX="176.0" layoutY="172.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Login" textAlignment="CENTER">
                <font>
-                  <Font name="Segoe UI Bold" size="24.0" />
+                  <Font name="System Bold" size="26.0" />
                </font>
             </Text>
-            <Button fx:id="loginButton" layoutX="135.0" layoutY="312.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="95.0" style="-fx-background-color: #0599ff;" text="Log in" textAlignment="CENTER" textFill="WHITE" />
+            <TextField fx:id="usernameField" layoutX="136.0" layoutY="205.0" promptText="User name" style="-fx-background-color: transparent; -fx-border-color: #0580FF; -fx-border-width: 0px 0px 1px 0px;" />
+            <PasswordField fx:id="passwordField" layoutX="136.0" layoutY="250.0" promptText="Password" style="-fx-background-color: transparent; -fx-border-color: #0580FF; -fx-border-width: 0px 0px 1px 0px;" />
+            <Button fx:id="loginButton" layoutX="164.0" layoutY="299.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="97.0" style="-fx-background-color: #0580FF;" text="Login" textFill="WHITE" />
          </children>
       </AnchorPane>
-   </center>
+   </right>
 </BorderPane>
-

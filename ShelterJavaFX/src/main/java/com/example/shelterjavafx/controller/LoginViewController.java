@@ -1,44 +1,42 @@
 package com.example.shelterjavafx.controller;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import java.io.IOException;
 
 public class LoginViewController {
 
-    // Pola logowania
     @FXML
     private TextField usernameField;
     @FXML
     private PasswordField passwordField;
     @FXML
     private Button loginButton;
-
-    // Pola rejestracji
-    @FXML
-    private TextField registerUsernameField;
-    @FXML
-    private PasswordField registerPasswordField;
-    @FXML
-    private PasswordField registerRepeatPasswordField;
-    @FXML
-    private Button registerButton;
-
-    @FXML
-    private Text messageText;
-
     @FXML
     public void initialize() {
         loginButton.setOnAction(event -> handleLogin());
-        registerButton.setOnAction(event -> handleRegister());
     }
 
-    // Metoda logowania
+    private void switchToPanel(String fxmlFile) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
+            Parent root = loader.load();
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Error", "Failed to load the panel.");
+        }
+    }
+
     private void handleLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
@@ -48,34 +46,17 @@ public class LoginViewController {
             return;
         }
 
-        if ("admin".equals(username) && "123qwe456".equals(password)) {
-            showAlert(Alert.AlertType.INFORMATION, "Login Successful", "You have successfully logged in!");
+        if ("admin".equals(username) && "123admin456".equals(password)) {
+            showAlert(Alert.AlertType.INFORMATION, "Login Successful", "Welcome Admin!");
+            switchToPanel("/com/example/shelterjavafx/view/admin-view.fxml");
+        } else if ("user".equals(username) && "123user456".equals(password)) {
+            showAlert(Alert.AlertType.INFORMATION, "Login Successful", "Welcome User!");
+            switchToPanel("/com/example/shelterjavafx/view/user-view.fxml");
         } else {
             showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid username or password.");
         }
     }
 
-    // Metoda rejestracji
-    private void handleRegister() {
-        String username = registerUsernameField.getText();
-        String password = registerPasswordField.getText();
-        String repeatPassword = registerRepeatPasswordField.getText();
-
-        if (username.isEmpty() || password.isEmpty() || repeatPassword.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Validation Error", "All fields are required.");
-            return;
-        }
-
-        if (!password.equals(repeatPassword)) {
-            showAlert(Alert.AlertType.ERROR, "Password Mismatch", "Passwords do not match.");
-            return;
-        }
-
-        // Logika rejestracji (można dodać zapis do bazy danych lub pliku)
-        showAlert(Alert.AlertType.INFORMATION, "Registration Successful", "Account for " + username + " has been created!");
-    }
-
-    // Pomocnicza metoda do wyświetlania alertów
     private void showAlert(Alert.AlertType alertType, String title, String message) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);

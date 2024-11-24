@@ -45,7 +45,7 @@ public class ShelterManager {
         List<String> emptyShelters = new ArrayList<>();
 
         for (AnimalShelter shelter : shelters.values()) {
-            if (shelter.getAnimalList().isEmpty()) {
+            if (shelter.getAnimals().isEmpty()) {  // Zmiana z getAnimalList() na getAnimals()
                 emptyShelters.add(shelter.getShelterName());
             }
         }
@@ -55,12 +55,11 @@ public class ShelterManager {
 
     public void summary() {
         for (AnimalShelter shelter : shelters.values()) {
-            int currentCapacity = shelter.getAnimalList().size();
+            int currentCapacity = shelter.getAnimals().size();  // Zmiana z getAnimalList() na getAnimals()
             int maxCapacity = shelter.getMaxCapacity();
             double occupancyRate = (double) currentCapacity / maxCapacity * 100;
 
             System.out.printf("Schronisko: %s, Zapełnienie: %.2f%%\n", shelter.getShelterName(), occupancyRate);
         }
     }
-
 }

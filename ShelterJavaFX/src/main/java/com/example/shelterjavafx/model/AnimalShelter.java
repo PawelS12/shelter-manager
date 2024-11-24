@@ -1,41 +1,75 @@
 package com.example.shelterjavafx.model;
 
-import com.example.shelterjavafx.model.Animal;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.util.*;
 
 public class AnimalShelter {
-    private String shelterName;
-    private List<Animal> animalList;
-    private int maxCapacity;
+    private final StringProperty shelterName;
+    private final IntegerProperty maxCapacity;
+    private final IntegerProperty currentAnimals;
+    private ObservableList<Animal> animals;  // Lista zwierząt obserwowana przez JavaFX
 
     public AnimalShelter(String shelterName, int maxCapacity) {
-        this.shelterName = shelterName;
-        this.maxCapacity = maxCapacity;
-        this.animalList = new ArrayList<>();
+        this.shelterName = new SimpleStringProperty(shelterName);
+        this.maxCapacity = new SimpleIntegerProperty(maxCapacity);
+        this.currentAnimals = new SimpleIntegerProperty(0); // Początkowo brak zwierząt
+        this.animals = FXCollections.observableArrayList();  // Inicjalizujemy ObservableList
     }
 
     public int getMaxCapacity() {
-        return this.maxCapacity;
+        return this.maxCapacity.get();
     }
 
     public String getShelterName() {
-        return this.shelterName;
+        return this.shelterName.get();
     }
 
-    public List<Animal> getAnimalList() {
-        return this.animalList;
+    public ObservableList<Animal> getAnimals() {
+        return animals;
     }
 
+    public void setShelterName(String shelterName) {
+        this.shelterName.set(shelterName);
+    }
+
+    public StringProperty shelterNameProperty() {
+        return shelterName;
+    }
+
+    public void setMaxCapacity(int maxCapacity) {
+        this.maxCapacity.set(maxCapacity);
+    }
+
+    public IntegerProperty maxCapacityProperty() {
+        return maxCapacity;
+    }
+
+    public int getCurrentAnimals() {
+        return currentAnimals.get();
+    }
+
+    public IntegerProperty currentAnimalsProperty() {
+        return currentAnimals;
+    }
+
+    // Dodawanie zwierzęcia do schroniska
     public boolean addAnimal(Animal animal) {
-        for (Animal existingAnimal : animalList) {
+        for (Animal existingAnimal : animals) {
             if (existingAnimal.compareTo(animal) == 0) {
-                System.err.println("To zwierzę juz istnieje.");
+                System.err.println("To zwierzę już istnieje.");
                 return false;
             }
         }
 
-        if (animalList.size() < maxCapacity) {
-            animalList.add(animal);
+        if (animals.size() < maxCapacity.get()) {
+            animals.add(animal);
+            currentAnimals.set(animals.size());
             return true;
         } else {
             System.err.println("Pełna pojemność. Nie można dodać więcej zwierząt.");
@@ -43,31 +77,34 @@ public class AnimalShelter {
         }
     }
 
+    // Usuwanie zwierzęcia
     public boolean removeAnimal(Animal animal) {
-        boolean removed = animalList.removeIf(existingAnimal -> existingAnimal.compareTo(animal) == 0);
+        boolean removed = animals.removeIf(existingAnimal -> existingAnimal.compareTo(animal) == 0);
+        if (removed) {
+            currentAnimals.set(animals.size());  // Aktualizacja liczby zwierząt
+        }
         return removed;
     }
 
-    public boolean getAnimal(Animal animal, Student student) {
-        for (Animal existingAnimal : animalList) {
-            if (existingAnimal.compareTo(animal) == 0) {
-                existingAnimal.setAdopted();
-                animalList.remove(existingAnimal);
-                student.getAnimals().add(existingAnimal);
-
-                System.out.println("Zwierzę zostało zaadoptowane.");
-                return true;
-            }
+    // Adopcja zwierzęcia przez studentów
+    public boolean adoptAnimal(Animal animal, Student student) {
+        boolean removed = animals.removeIf(existingAnimal -> existingAnimal.compareTo(animal) == 0);
+        if (removed) {
+            animal.setAdopted();  // Oznaczamy zwierzę jako adoptowane
+            student.getAnimals().add(animal);
+            currentAnimals.set(animals.size());  // Aktualizacja liczby zwierząt
+            System.out.println("Zwierzę zostało zaadoptowane.");
+            return true;
         }
         System.err.println("Nie znaleziono zwierzęcia.");
         return false;
     }
 
+    // Zmiana stanu zdrowia zwierzęcia
     public boolean changeCondition(Animal animal, AnimalCondition condition) {
-        for (Animal existingAnimal : animalList) {
+        for (Animal existingAnimal : animals) {
             if (existingAnimal.compareTo(animal) == 0) {
                 existingAnimal.setCondition(condition);
-
                 return true;
             }
         }
@@ -75,11 +112,11 @@ public class AnimalShelter {
         return false;
     }
 
+    // Zmiana wieku zwierzęcia
     public boolean changeAge(Animal animal, int age) {
-        for (Animal existingAnimal : animalList) {
+        for (Animal existingAnimal : animals) {
             if (existingAnimal.compareTo(animal) == 0) {
                 existingAnimal.setAge(age);
-
                 return true;
             }
         }
@@ -87,38 +124,36 @@ public class AnimalShelter {
         return false;
     }
 
+    // Liczenie zwierząt o danym stanie zdrowia
     public int countByCondition(AnimalCondition condition) {
         int counter = 0;
-
-        for (Animal existingAnimal : animalList) {
-            if(existingAnimal.getCondition() == condition) {
+        for (Animal existingAnimal : animals) {
+            if (existingAnimal.getCondition() == condition) {
                 counter++;
             }
         }
         return counter;
     }
 
+    // Sortowanie zwierząt po nazwie
     public List<Animal> sortByName() {
-        List<Animal> sortedList = new ArrayList<>(animalList);
+        List<Animal> sortedList = new ArrayList<>(animals);
         Collections.sort(sortedList, Comparator.comparing(Animal::getName));
         return sortedList;
     }
 
+    // Sortowanie zwierząt po cenie
     public List<Animal> sortByPrice() {
-        List<Animal> sortedList = new ArrayList<>(animalList);
+        List<Animal> sortedList = new ArrayList<>(animals);
         Collections.sort(sortedList, Comparator.comparingDouble(Animal::getPrice));
         return sortedList;
     }
 
+    // Wyszukiwanie zwierzęcia po nazwie
     public String search(String name) {
-        Comparator<Animal> nameComparator = new Comparator<Animal>() {
-            @Override
-            public int compare(Animal a1, Animal a2) {
-                return a1.getName().compareToIgnoreCase(a2.getName());
-            }
-        };
+        Comparator<Animal> nameComparator = Comparator.comparing(Animal::getName, String::compareToIgnoreCase);
 
-        for (Animal animal : animalList) {
+        for (Animal animal : animals) {
             if (nameComparator.compare(animal, new Animal(name, null, null, 0, 0)) == 0) {
                 return animal.getName();
             }
@@ -127,32 +162,37 @@ public class AnimalShelter {
         return null;
     }
 
+    // Wyszukiwanie zwierzęcia po fragmencie nazwy lub gatunku
     public List<Animal> searchPartial(String fragment) {
         List<Animal> matchingAnimals = new ArrayList<>();
-
-        for (Animal animal : animalList) {
+        for (Animal animal : animals) {
             if (animal.getName().toLowerCase().contains(fragment.toLowerCase()) || animal.getSpecies().toLowerCase().contains(fragment.toLowerCase())) {
                 matchingAnimals.add(animal);
             }
         }
-
         return matchingAnimals;
     }
 
+    // Wyświetlanie wszystkich zwierząt w schronisku
     public void summary() {
-        System.out.println("Wszystkie zwierzęta w schonisku: ");
-        for (Animal animal : animalList) {
+        System.out.println("Wszystkie zwierzęta w schronisku: ");
+        for (Animal animal : animals) {
             animal.Print();
         }
     }
 
+    // Zwierzę o najwyższej cenie
     public Animal max() {
-        if (animalList.isEmpty()) {
+        if (animals.isEmpty()) {
             System.err.println("Brak zwierząt w schronisku.");
             return null;
         }
 
-        return Collections.max(animalList, Comparator.comparingDouble(Animal::getPrice));
+        return Collections.max(animals, Comparator.comparingDouble(Animal::getPrice));
     }
 
+    public static List<AnimalShelter> sortSheltersByMaxCapacity(List<AnimalShelter> shelters) {
+        Collections.sort(shelters, Comparator.comparingInt(AnimalShelter::getMaxCapacity));
+        return shelters;
+    }
 }
