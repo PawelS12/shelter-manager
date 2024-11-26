@@ -26,22 +26,12 @@ public class Animal implements Comparable<Animal> {
         this.isAdopted = new SimpleBooleanProperty(false);
     }
 
-    // Settery i gettery z właściwościami (binding properties)
-
-    public StringProperty nameProperty() {
-        return name;
-    }
-
     public String getName() {
         return name.get();
     }
 
     public void setName(String name) {
         this.name.set(name);
-    }
-
-    public StringProperty speciesProperty() {
-        return species;
     }
 
     public String getSpecies() {
@@ -60,20 +50,12 @@ public class Animal implements Comparable<Animal> {
         this.condition = condition;
     }
 
-    public IntegerProperty ageProperty() {
-        return age;
-    }
-
     public int getAge() {
         return age.get();
     }
 
     public void setAge(int age) {
         this.age.set(age);
-    }
-
-    public DoubleProperty priceProperty() {
-        return price;
     }
 
     public double getPrice() {
@@ -84,10 +66,6 @@ public class Animal implements Comparable<Animal> {
         this.price.set(price);
     }
 
-    public BooleanProperty isAdoptedProperty() {
-        return isAdopted;
-    }
-
     public boolean isAdopted() {
         return isAdopted.get();
     }
@@ -96,7 +74,6 @@ public class Animal implements Comparable<Animal> {
         this.isAdopted.set(true);
     }
 
-    // Print method (for debugging/logging)
     public void Print() {
         System.out.println("Imię: " + name.get() + " | Gatunek: " + species.get() + " | Stan: " + condition + " | Wiek: " + age.get() + " | Cena: " + price.get());
     }

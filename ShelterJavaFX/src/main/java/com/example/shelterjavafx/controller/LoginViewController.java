@@ -1,5 +1,7 @@
 package com.example.shelterjavafx.controller;
 
+import com.example.shelterjavafx.exception.PanelSwitchException;
+import com.example.shelterjavafx.exception.ValidationException;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -24,7 +26,7 @@ public class LoginViewController {
         loginButton.setOnAction(event -> handleLogin());
     }
 
-    private void switchToPanel(String fxmlFile) {
+    private void switchToPanel(String fxmlFile) throws PanelSwitchException {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
             Parent root = loader.load();
@@ -32,28 +34,32 @@ public class LoginViewController {
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to load the panel.");
+            throw new PanelSwitchException("Failed to load the panel: " + fxmlFile, e);
         }
     }
 
     private void handleLogin() {
-        String username = usernameField.getText();
-        String password = passwordField.getText();
+        try {
+            String username = usernameField.getText();
+            String password = passwordField.getText();
 
-        if (username.isEmpty() || password.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Validation Error", "Username and password cannot be empty.");
-            return;
-        }
+            if (username.isEmpty() || password.isEmpty()) {
+                throw new ValidationException("Username and password cannot be empty.");
+            }
 
-        if ("admin".equals(username) && "123admin456".equals(password)) {
-            showAlert(Alert.AlertType.INFORMATION, "Login Successful", "Welcome Admin!");
-            switchToPanel("/com/example/shelterjavafx/view/admin-view.fxml");
-        } else if ("user".equals(username) && "123user456".equals(password)) {
-            showAlert(Alert.AlertType.INFORMATION, "Login Successful", "Welcome User!");
-            switchToPanel("/com/example/shelterjavafx/view/user-view.fxml");
-        } else {
-            showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid username or password.");
+            if ("admin".equals(username) && "123admin456".equals(password)) {
+                showAlert(Alert.AlertType.INFORMATION, "Login Successful", "Welcome Admin!");
+                switchToPanel("/com/example/shelterjavafx/view/admin-view.fxml");
+            } else if ("user".equals(username) && "123user456".equals(password)) {
+                showAlert(Alert.AlertType.INFORMATION, "Login Successful", "Welcome User!");
+                switchToPanel("/com/example/shelterjavafx/view/user-view.fxml");
+            } else {
+                throw new ValidationException("Invalid username or password.");
+            }
+        } catch (ValidationException e) {
+            showAlert(Alert.AlertType.WARNING, "Validation Error", e.getMessage());
+        } catch (PanelSwitchException e) {
+        showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
         }
     }
 

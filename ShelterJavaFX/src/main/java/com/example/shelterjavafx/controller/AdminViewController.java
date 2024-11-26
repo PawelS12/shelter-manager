@@ -1,5 +1,8 @@
 package com.example.shelterjavafx.controller;
 
+import com.example.shelterjavafx.exception.FilterException;
+import com.example.shelterjavafx.exception.InitializationException;
+import com.example.shelterjavafx.exception.ValidationException;
 import com.example.shelterjavafx.model.Animal;
 import com.example.shelterjavafx.model.AnimalCondition;
 import com.example.shelterjavafx.model.AnimalShelter;
@@ -62,37 +65,60 @@ public class AdminViewController {
 
     @FXML
     private void applyShelterFilters() {
-        String filterText = shelterFilterTextField.getText().toLowerCase().trim();
-        ObservableList<AnimalShelter> filteredShelters = FXCollections.observableArrayList();
-
-        for (AnimalShelter shelter : shelters) {
-            if (filterText.isEmpty() || shelter.getShelterName().toLowerCase().contains(filterText)) {
-                filteredShelters.add(shelter);
+        try {
+            String filterText = shelterFilterTextField.getText().toLowerCase().trim();
+            if (filterText.length() > 30) {
+                throw new FilterException("Filter text is too long. Please use a shorter filter.");
             }
-        }
 
-        shelterTable.setItems(filteredShelters);
+            ObservableList<AnimalShelter> filteredShelters = FXCollections.observableArrayList();
+            for (AnimalShelter shelter : shelters) {
+                if (filterText.isEmpty() || shelter.getShelterName().toLowerCase().contains(filterText)) {
+                    filteredShelters.add(shelter);
+                }
+            }
+
+            shelterTable.setItems(filteredShelters);
+        } catch (FilterException e) {
+            showErrorAlert(e.getMessage());
+        }
+    }
+
+    private void showErrorAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
+        alert.showAndWait();
     }
 
     @FXML
     private void applyAnimalFilters() {
-        String filterText = animalFilterTextField.getText().toLowerCase().trim();
-        ObservableList<Animal> filteredAnimals = FXCollections.observableArrayList();
-        AnimalShelter selectedShelter = shelterTable.getSelectionModel().getSelectedItem();
+        try {
+            String filterText = animalFilterTextField.getText().toLowerCase().trim();
 
-        if (selectedShelter != null) {
-            List<Animal> animals = selectedShelter.getAnimals();
+            if (filterText.length() > 30) {
+                throw new FilterException("Filter text is too long. Please use a shorter filter.");
+            }
 
-            for (Animal animal : animals) {
-                boolean matchesNameOrSpecies = filterText.isEmpty() || animal.getName().toLowerCase().contains(filterText) || animal.getSpecies().toLowerCase().contains(filterText);
+            ObservableList<Animal> filteredAnimals = FXCollections.observableArrayList();
 
-                if (matchesNameOrSpecies) {
-                    filteredAnimals.add(animal);
+            AnimalShelter selectedShelter = shelterTable.getSelectionModel().getSelectedItem();
+            if (selectedShelter != null) {
+                List<Animal> animals = selectedShelter.getAnimals();
+
+                for (Animal animal : animals) {
+                    boolean matchesNameOrSpecies = filterText.isEmpty() ||
+                            animal.getName().toLowerCase().contains(filterText) ||
+                            animal.getSpecies().toLowerCase().contains(filterText);
+
+                    if (matchesNameOrSpecies) {
+                        filteredAnimals.add(animal);
+                    }
                 }
             }
-        }
 
-        animalTable.setItems(filteredAnimals);
+            animalTable.setItems(filteredAnimals);
+        } catch (FilterException e) {
+            showErrorAlert(e.getMessage());
+        }
     }
 
     @FXML
@@ -131,54 +157,68 @@ public class AdminViewController {
 
     @FXML
     private void handleAddShelterButtonClick(ActionEvent event) {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Add Shelter");
-        dialog.setHeaderText("Enter Shelter Details:");
-        TextField shelterNameField = new TextField();
-        shelterNameField.setPromptText("Shelter Name");
-        TextField shelterCapacityField = new TextField();
-        shelterCapacityField.setPromptText("Maximum Capacity");
+        try {
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setTitle("Add Shelter");
+            dialog.setHeaderText("Enter Shelter Details:");
+            TextField shelterNameField = new TextField();
+            shelterNameField.setPromptText("Shelter Name");
 
-        VBox vbox = new VBox(10, shelterNameField, shelterCapacityField);
-        dialog.getDialogPane().setContent(vbox);
+            TextField shelterCapacityField = new TextField();
+            shelterCapacityField.setPromptText("Maximum Capacity");
 
-        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
+            VBox vbox = new VBox(10, shelterNameField, shelterCapacityField);
+            dialog.getDialogPane().setContent(vbox);
 
-        Optional<ButtonType> result = dialog.showAndWait();
+            ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+            ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
 
-        if (result.isPresent() && result.get() == okButton) {
-            String shelterName = shelterNameField.getText();
-            String capacityInput = shelterCapacityField.getText();
+            Optional<ButtonType> result = dialog.showAndWait();
 
-            if (shelterName != null && !shelterName.isEmpty() && capacityInput != null && !capacityInput.isEmpty()) {
+            if (result.isPresent() && result.get() == okButton) {
+                String shelterName = shelterNameField.getText();
+                String capacityInput = shelterCapacityField.getText();
+
+                if (shelterName == null || shelterName.isEmpty() || capacityInput == null || capacityInput.isEmpty()) {
+                    throw new ValidationException("Both fields must be filled.");
+                }
+
                 try {
-                    boolean shelterExists = shelters.stream().anyMatch(shelter -> shelter.getShelterName().equalsIgnoreCase(shelterName));
+                    boolean shelterExists = shelters.stream()
+                            .anyMatch(shelter -> shelter.getShelterName().equalsIgnoreCase(shelterName));
 
                     if (shelterExists) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Error");
-                        alert.setHeaderText("Shelter Already Exists");
-                        alert.setContentText("A shelter with this name already exists. Please choose a different name.");
-                        alert.showAndWait();
-                    } else {
-                        int maxCapacity = Integer.parseInt(capacityInput);
-                        AnimalShelter newShelter = new AnimalShelter(shelterName, maxCapacity);
-                        shelters.add(newShelter);
-                        shelterTable.getItems().setAll(shelters);
+                        throw new ValidationException("A shelter with this name already exists. Please choose a different name.");
                     }
+
+                    int maxCapacity = Integer.parseInt(capacityInput);
+
+                    AnimalShelter newShelter = new AnimalShelter(shelterName, maxCapacity);
+                    shelters.add(newShelter);
+                    shelterTable.getItems().setAll(shelters);
+
                 } catch (NumberFormatException e) {
-                    System.out.println("Invalid capacity input.");
+                    throw new ValidationException("Invalid number format for capacity.");
                 }
             }
+        } catch (ValidationException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Validation Error");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
         }
     }
 
     @FXML
     private void handleAddAnimalButtonClick(ActionEvent event) {
         AnimalShelter selectedShelter = shelterTable.getSelectionModel().getSelectedItem();
-        if (selectedShelter != null) {
+        try {
+            if (selectedShelter == null) {
+                throw new ValidationException("No shelter selected.");
+            }
+
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setTitle("Add Animal");
             dialog.setHeaderText("Enter Animal Details:");
@@ -215,30 +255,35 @@ public class AdminViewController {
                 String priceInput = priceField.getText();
                 AnimalCondition animalCondition = conditionChoiceBox.getValue();
 
-                if (animalName != null && !animalName.isEmpty() && animalSpecies != null && !animalSpecies.isEmpty() && ageInput != null && !ageInput.isEmpty() && priceInput != null && !priceInput.isEmpty()) {
-                    try {
-                        int age = Integer.parseInt(ageInput);
-                        double price = Double.parseDouble(priceInput);
-                        Animal newAnimal = new Animal(animalName, animalSpecies, animalCondition, age, price);
-                        boolean animalExists = selectedShelter.getAnimals().stream().anyMatch(existingAnimal -> existingAnimal.compareTo(newAnimal) == 0);
+                if (animalName.isEmpty() || animalSpecies.isEmpty() || ageInput.isEmpty() || priceInput.isEmpty()) {
+                    throw new ValidationException("All fields must be filled.");
+                }
 
-                        if (animalExists) {
-                            Alert alert = new Alert(Alert.AlertType.ERROR);
-                            alert.setTitle("Error");
-                            alert.setHeaderText("Animal Already Exists");
-                            alert.setContentText("An animal with the same name, species, and age already exists in this shelter.");
-                            alert.showAndWait();
-                        } else {
-                            selectedShelter.addAnimal(newAnimal);
-                            updateAnimalTable(selectedShelter);
-                        }
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid age or price input.");
+                try {
+                    int age = Integer.parseInt(ageInput);
+                    double price = Double.parseDouble(priceInput);
+
+                    Animal newAnimal = new Animal(animalName, animalSpecies, animalCondition, age, price);
+                    boolean animalExists = selectedShelter.getAnimals().stream()
+                            .anyMatch(existingAnimal -> existingAnimal.compareTo(newAnimal) == 0);
+
+                    if (animalExists) {
+                        throw new ValidationException("Animal with the same details already exists in the shelter.");
                     }
+
+                    selectedShelter.addAnimal(newAnimal);
+                    updateAnimalTable(selectedShelter);
+
+                } catch (NumberFormatException e) {
+                    throw new ValidationException("Invalid number format for age or price.");
                 }
             }
-        } else {
-            System.out.println("No shelter selected.");
+        } catch (ValidationException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Validation Error");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
         }
     }
 
@@ -246,7 +291,11 @@ public class AdminViewController {
     private void handleRemoveShelterButtonClick(ActionEvent event) {
         AnimalShelter selectedShelter = shelterTable.getSelectionModel().getSelectedItem();
 
-        if (selectedShelter != null) {
+        try {
+            if (selectedShelter == null) {
+                throw new ValidationException("No shelter selected.");
+            }
+
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Remove Shelter");
             alert.setHeaderText("Are you sure you want to remove this shelter?");
@@ -258,35 +307,49 @@ public class AdminViewController {
                 shelters.remove(selectedShelter);
                 shelterTable.getItems().setAll(shelters);
             }
-        } else {
+        } catch (ValidationException e) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("No Shelter Selected");
-            alert.setHeaderText("Please select a shelter to remove.");
+            alert.setTitle("Error");
+            alert.setHeaderText("Validation Error");
+            alert.setContentText(e.getMessage());
             alert.showAndWait();
         }
     }
+
 
     @FXML
     private void handleRemoveAnimalButtonClick(ActionEvent event) {
         AnimalShelter selectedShelter = shelterTable.getSelectionModel().getSelectedItem();
         Animal selectedAnimal = animalTable.getSelectionModel().getSelectedItem();
 
-        if (selectedShelter != null && selectedAnimal != null) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Remove Animal");
-            alert.setHeaderText("Are you sure you want to remove this animal?");
-            alert.setContentText("This action cannot be undone.");
-
-            Optional<ButtonType> result = alert.showAndWait();
-
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                selectedShelter.removeAnimal(selectedAnimal);
-                updateAnimalTable(selectedShelter);
+        try {
+            if (selectedAnimal == null) {
+                throw new ValidationException("No animal selected.");
             }
-        } else {
+
+            if (selectedShelter != null && selectedAnimal != null) {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Remove Animal");
+                alert.setHeaderText("Are you sure you want to remove this animal?");
+                alert.setContentText("This action cannot be undone.");
+
+                Optional<ButtonType> result = alert.showAndWait();
+
+                if (result.isPresent() && result.get() == ButtonType.OK) {
+                    selectedShelter.removeAnimal(selectedAnimal);
+                    updateAnimalTable(selectedShelter);
+                }
+            } else {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("No Animal Selected");
+                alert.setHeaderText("Please select an animal to remove.");
+                alert.showAndWait();
+            }
+        } catch (ValidationException e) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("No Animal Selected");
-            alert.setHeaderText("Please select an animal to remove.");
+            alert.setTitle("Error");
+            alert.setHeaderText("Validation Error");
+            alert.setContentText(e.getMessage());
             alert.showAndWait();
         }
     }
@@ -295,7 +358,11 @@ public class AdminViewController {
     private void handleEditShelterButtonClick(ActionEvent event) {
         AnimalShelter selectedShelter = shelterTable.getSelectionModel().getSelectedItem();
 
-        if (selectedShelter != null) {
+        try {
+            if (selectedShelter == null) {
+                throw new ValidationException("No shelter selected.");
+            }
+
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setTitle("Edit Shelter");
             dialog.setHeaderText("Edit Shelter Details:");
@@ -319,91 +386,93 @@ public class AdminViewController {
                 String newShelterName = shelterNameField.getText();
                 String newCapacityInput = shelterCapacityField.getText();
 
-                if (!newShelterName.isEmpty() && !newCapacityInput.isEmpty()) {
-                    try {
-                        int newCapacity = Integer.parseInt(newCapacityInput);
+                if (newShelterName.isEmpty() || newCapacityInput.isEmpty()) {
+                    throw new ValidationException("All fields must be filled.");
+                }
 
-                        for (AnimalShelter shelter : shelters) {
-                            if (shelter.getShelterName().equals(newShelterName) && shelter != selectedShelter) {
-                                Alert alert = new Alert(Alert.AlertType.WARNING);
-                                alert.setTitle("Shelter Already Exists");
-                                alert.setHeaderText("A shelter with this name already exists.");
-                                alert.showAndWait();
-                                return;
-                            }
+                try {
+                    int newCapacity = Integer.parseInt(newCapacityInput);
+
+                    for (AnimalShelter shelter : shelters) {
+                        if (shelter.getShelterName().equals(newShelterName) && shelter != selectedShelter) {
+                            throw new ValidationException("A shelter with this name already exists.");
                         }
-
-                        selectedShelter.setShelterName(newShelterName);
-                        selectedShelter.setMaxCapacity(newCapacity);
-                        shelterTable.refresh();  // Odświeżamy tabelę schronisk
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid capacity input.");
                     }
+
+                    selectedShelter.setShelterName(newShelterName);
+                    selectedShelter.setMaxCapacity(newCapacity);
+                    shelterTable.refresh();
+                } catch (NumberFormatException e) {
+                    throw new ValidationException("Invalid number format for capacity.");
                 }
             }
-        } else {
+        } catch (ValidationException e) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("No Shelter Selected");
-            alert.setHeaderText("Please select a shelter to edit.");
+            alert.setTitle("Validation Error");
+            alert.setHeaderText("Error");
+            alert.setContentText(e.getMessage());
             alert.showAndWait();
         }
     }
-
 
     @FXML
     private void handleEditAnimalButtonClick(ActionEvent event) {
         AnimalShelter selectedShelter = shelterTable.getSelectionModel().getSelectedItem();
         Animal selectedAnimal = animalTable.getSelectionModel().getSelectedItem();
+        try {
+            if (selectedShelter == null) {
+                throw new ValidationException("No shelter selected.");
+            }
 
-        if (selectedShelter != null && selectedAnimal != null) {
-            Dialog<ButtonType> dialog = new Dialog<>();
-            dialog.setTitle("Edit Animal");
-            dialog.setHeaderText("Edit Animal Details:");
+            if (selectedAnimal != null) {
+                Dialog<ButtonType> dialog = new Dialog<>();
+                dialog.setTitle("Edit Animal");
+                dialog.setHeaderText("Edit Animal Details:");
 
-            TextField animalNameField = new TextField(selectedAnimal.getName());
-            animalNameField.setPromptText("Animal Name");
+                TextField animalNameField = new TextField(selectedAnimal.getName());
+                animalNameField.setPromptText("Animal Name");
 
-            TextField speciesField = new TextField(selectedAnimal.getSpecies());
-            speciesField.setPromptText("Animal Species");
+                TextField speciesField = new TextField(selectedAnimal.getSpecies());
+                speciesField.setPromptText("Animal Species");
 
-            TextField ageField = new TextField(String.valueOf(selectedAnimal.getAge()));
-            ageField.setPromptText("Animal Age");
+                TextField ageField = new TextField(String.valueOf(selectedAnimal.getAge()));
+                ageField.setPromptText("Animal Age");
 
-            TextField priceField = new TextField(String.valueOf(selectedAnimal.getPrice()));
-            priceField.setPromptText("Animal Price");
+                TextField priceField = new TextField(String.valueOf(selectedAnimal.getPrice()));
+                priceField.setPromptText("Animal Price");
 
-            ComboBox<AnimalCondition> conditionComboBox = new ComboBox<>();
-            conditionComboBox.getItems().setAll(AnimalCondition.values());
-            conditionComboBox.setValue(selectedAnimal.getCondition());
+                ComboBox<AnimalCondition> conditionComboBox = new ComboBox<>();
+                conditionComboBox.getItems().setAll(AnimalCondition.values());
+                conditionComboBox.setValue(selectedAnimal.getCondition());
 
-            VBox vbox = new VBox(10, animalNameField, speciesField, ageField, priceField, conditionComboBox);
-            dialog.getDialogPane().setContent(vbox);
+                VBox vbox = new VBox(10, animalNameField, speciesField, ageField, priceField, conditionComboBox);
+                dialog.getDialogPane().setContent(vbox);
 
-            ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
-            ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-            dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
+                ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+                ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+                dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
 
-            Optional<ButtonType> result = dialog.showAndWait();
+                Optional<ButtonType> result = dialog.showAndWait();
 
-            if (result.isPresent() && result.get() == okButton) {
-                String newAnimalName = animalNameField.getText();
-                String newSpecies = speciesField.getText();
-                String newAgeInput = ageField.getText();
-                String newPriceInput = priceField.getText();
+                if (result.isPresent() && result.get() == okButton) {
+                    String newAnimalName = animalNameField.getText();
+                    String newSpecies = speciesField.getText();
+                    String newAgeInput = ageField.getText();
+                    String newPriceInput = priceField.getText();
 
-                if (!newAnimalName.isEmpty() && !newSpecies.isEmpty() && !newAgeInput.isEmpty() && !newPriceInput.isEmpty()) {
+                    if (newAnimalName.isEmpty() || newSpecies.isEmpty() || newAgeInput.isEmpty() || newPriceInput.isEmpty()) {
+                        throw new ValidationException("All fields must be filled.");
+                    }
+
                     try {
                         int newAge = Integer.parseInt(newAgeInput);
                         double newPrice = Double.parseDouble(newPriceInput);
 
                         Animal newAnimal = new Animal(newAnimalName, newSpecies, conditionComboBox.getValue(), newAge, newPrice);
+
                         for (Animal animal : selectedShelter.getAnimals()) {
                             if (animal.compareTo(newAnimal) == 0 && animal != selectedAnimal) {
-                                Alert alert = new Alert(Alert.AlertType.WARNING);
-                                alert.setTitle("Animal Already Exists");
-                                alert.setHeaderText("An animal with these details already exists.");
-                                alert.showAndWait();
-                                return;
+                                throw new ValidationException("An animal with this name already exists.");
                             }
                         }
 
@@ -415,14 +484,20 @@ public class AdminViewController {
 
                         animalTable.refresh();
                     } catch (NumberFormatException e) {
-                        System.out.println("Invalid input.");
+                        throw new ValidationException("Invalid number format for age or price.");
                     }
                 }
+            } else {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("No Animal Selected");
+                alert.setHeaderText("Please select an animal to edit.");
+                alert.showAndWait();
             }
-        } else {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("No Animal Selected");
-            alert.setHeaderText("Please select an animal to edit.");
+        } catch (ValidationException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Validation Error");
+            alert.setHeaderText("Error");
+            alert.setContentText(e.getMessage());
             alert.showAndWait();
         }
     }
@@ -442,38 +517,46 @@ public class AdminViewController {
     private List<AnimalShelter> shelters = new ArrayList<>();
 
     public void initialize() {
-        shelterFilterTextField.setOnAction(event -> applyShelterFilters());
-        animalFilterTextField.setOnAction(event -> applyAnimalFilters());
+        try {
+            shelterFilterTextField.setOnAction(event -> applyShelterFilters());
+            animalFilterTextField.setOnAction(event -> applyAnimalFilters());
 
-        stateComboBox.setItems(FXCollections.observableArrayList(AnimalCondition.values()));
-        stateComboBox.setValue(null);
-        AnimalShelter shelterA = new AnimalShelter("Shelter A", 50);
-        shelterA.addAnimal(new Animal("Dog", "Bulldog", HEALTHY, 3, 122.12));
-        shelterA.addAnimal(new Animal("Cat", "Siamese", SICK, 9, 12222));
+            stateComboBox.setItems(FXCollections.observableArrayList(AnimalCondition.values()));
+            stateComboBox.setValue(null);
+            AnimalShelter shelterA = new AnimalShelter("Shelter A", 50);
+            shelterA.addAnimal(new Animal("Dog", "Bulldog", HEALTHY, 4, 122.12));
+            shelterA.addAnimal(new Animal("Fish", "Gold fish", SICK, 1, 12222));
 
-        AnimalShelter shelterB = new AnimalShelter("Shelter B", 30);
-        shelterB.addAnimal(new Animal("Dog", "Labrador", ADOPTION, 12, 9000));
+            AnimalShelter shelterB = new AnimalShelter("Shelter B", 30);
+            shelterB.addAnimal(new Animal("Dog", "Labrador", ADOPTION, 12, 9000));
 
-        shelters.add(shelterA);
-        shelters.add(shelterB);
+            shelters.add(shelterA);
+            shelters.add(shelterB);
 
-        shelterNameColumn.setCellValueFactory(new PropertyValueFactory<>("shelterName"));
-        maxCapacityColumn.setCellValueFactory(new PropertyValueFactory<>("maxCapacity"));
-        currentAnimalsColumn.setCellValueFactory(new PropertyValueFactory<>("currentAnimals"));
-
-        shelterTable.getItems().setAll(shelters);
-
-        animalNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-        animalSpeciesColumn.setCellValueFactory(new PropertyValueFactory<>("species"));
-        animalConditionColumn.setCellValueFactory(new PropertyValueFactory<>("condition"));
-        animalAgeColumn.setCellValueFactory(new PropertyValueFactory<>("age"));
-        animalPriceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
-
-        shelterTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                updateAnimalTable(newValue);
+            if (shelters.isEmpty()) {
+                throw new InitializationException("No shelters available to display.");
             }
-        });
+
+            shelterNameColumn.setCellValueFactory(new PropertyValueFactory<>("shelterName"));
+            maxCapacityColumn.setCellValueFactory(new PropertyValueFactory<>("maxCapacity"));
+            currentAnimalsColumn.setCellValueFactory(new PropertyValueFactory<>("currentAnimals"));
+
+            shelterTable.getItems().setAll(shelters);
+
+            animalNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+            animalSpeciesColumn.setCellValueFactory(new PropertyValueFactory<>("species"));
+            animalConditionColumn.setCellValueFactory(new PropertyValueFactory<>("condition"));
+            animalAgeColumn.setCellValueFactory(new PropertyValueFactory<>("age"));
+            animalPriceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
+
+            shelterTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue != null) {
+                    updateAnimalTable(newValue);
+                }
+            });
+        } catch (InitializationException e) {
+            showErrorAlert(e.getMessage());
+        }
     }
 
     private void updateAnimalTable(AnimalShelter shelter) {

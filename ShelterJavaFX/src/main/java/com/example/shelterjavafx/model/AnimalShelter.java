@@ -13,13 +13,13 @@ public class AnimalShelter {
     private final StringProperty shelterName;
     private final IntegerProperty maxCapacity;
     private final IntegerProperty currentAnimals;
-    private ObservableList<Animal> animals;  // Lista zwierząt obserwowana przez JavaFX
+    private ObservableList<Animal> animals;
 
     public AnimalShelter(String shelterName, int maxCapacity) {
         this.shelterName = new SimpleStringProperty(shelterName);
         this.maxCapacity = new SimpleIntegerProperty(maxCapacity);
-        this.currentAnimals = new SimpleIntegerProperty(0); // Początkowo brak zwierząt
-        this.animals = FXCollections.observableArrayList();  // Inicjalizujemy ObservableList
+        this.currentAnimals = new SimpleIntegerProperty(0);
+        this.animals = FXCollections.observableArrayList();
     }
 
     public int getMaxCapacity() {
@@ -38,27 +38,14 @@ public class AnimalShelter {
         this.shelterName.set(shelterName);
     }
 
-    public StringProperty shelterNameProperty() {
-        return shelterName;
-    }
-
     public void setMaxCapacity(int maxCapacity) {
         this.maxCapacity.set(maxCapacity);
-    }
-
-    public IntegerProperty maxCapacityProperty() {
-        return maxCapacity;
     }
 
     public int getCurrentAnimals() {
         return currentAnimals.get();
     }
 
-    public IntegerProperty currentAnimalsProperty() {
-        return currentAnimals;
-    }
-
-    // Dodawanie zwierzęcia do schroniska
     public boolean addAnimal(Animal animal) {
         for (Animal existingAnimal : animals) {
             if (existingAnimal.compareTo(animal) == 0) {
@@ -77,22 +64,20 @@ public class AnimalShelter {
         }
     }
 
-    // Usuwanie zwierzęcia
     public boolean removeAnimal(Animal animal) {
         boolean removed = animals.removeIf(existingAnimal -> existingAnimal.compareTo(animal) == 0);
         if (removed) {
-            currentAnimals.set(animals.size());  // Aktualizacja liczby zwierząt
+            currentAnimals.set(animals.size());
         }
         return removed;
     }
 
-    // Adopcja zwierzęcia przez studentów
     public boolean adoptAnimal(Animal animal, Student student) {
         boolean removed = animals.removeIf(existingAnimal -> existingAnimal.compareTo(animal) == 0);
         if (removed) {
-            animal.setAdopted();  // Oznaczamy zwierzę jako adoptowane
+            animal.setAdopted();
             student.getAnimals().add(animal);
-            currentAnimals.set(animals.size());  // Aktualizacja liczby zwierząt
+            currentAnimals.set(animals.size());
             System.out.println("Zwierzę zostało zaadoptowane.");
             return true;
         }
@@ -100,7 +85,6 @@ public class AnimalShelter {
         return false;
     }
 
-    // Zmiana stanu zdrowia zwierzęcia
     public boolean changeCondition(Animal animal, AnimalCondition condition) {
         for (Animal existingAnimal : animals) {
             if (existingAnimal.compareTo(animal) == 0) {
@@ -112,7 +96,6 @@ public class AnimalShelter {
         return false;
     }
 
-    // Zmiana wieku zwierzęcia
     public boolean changeAge(Animal animal, int age) {
         for (Animal existingAnimal : animals) {
             if (existingAnimal.compareTo(animal) == 0) {
@@ -124,7 +107,6 @@ public class AnimalShelter {
         return false;
     }
 
-    // Liczenie zwierząt o danym stanie zdrowia
     public int countByCondition(AnimalCondition condition) {
         int counter = 0;
         for (Animal existingAnimal : animals) {
@@ -135,21 +117,18 @@ public class AnimalShelter {
         return counter;
     }
 
-    // Sortowanie zwierząt po nazwie
     public List<Animal> sortByName() {
         List<Animal> sortedList = new ArrayList<>(animals);
         Collections.sort(sortedList, Comparator.comparing(Animal::getName));
         return sortedList;
     }
 
-    // Sortowanie zwierząt po cenie
     public List<Animal> sortByPrice() {
         List<Animal> sortedList = new ArrayList<>(animals);
         Collections.sort(sortedList, Comparator.comparingDouble(Animal::getPrice));
         return sortedList;
     }
 
-    // Wyszukiwanie zwierzęcia po nazwie
     public String search(String name) {
         Comparator<Animal> nameComparator = Comparator.comparing(Animal::getName, String::compareToIgnoreCase);
 
@@ -162,7 +141,6 @@ public class AnimalShelter {
         return null;
     }
 
-    // Wyszukiwanie zwierzęcia po fragmencie nazwy lub gatunku
     public List<Animal> searchPartial(String fragment) {
         List<Animal> matchingAnimals = new ArrayList<>();
         for (Animal animal : animals) {
@@ -173,7 +151,6 @@ public class AnimalShelter {
         return matchingAnimals;
     }
 
-    // Wyświetlanie wszystkich zwierząt w schronisku
     public void summary() {
         System.out.println("Wszystkie zwierzęta w schronisku: ");
         for (Animal animal : animals) {
@@ -181,7 +158,6 @@ public class AnimalShelter {
         }
     }
 
-    // Zwierzę o najwyższej cenie
     public Animal max() {
         if (animals.isEmpty()) {
             System.err.println("Brak zwierząt w schronisku.");

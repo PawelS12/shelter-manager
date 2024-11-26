@@ -78,8 +78,8 @@
    <left>
       <AnchorPane prefHeight="500.0" prefWidth="142.0" style="-fx-background-color: #0600FF;" BorderPane.alignment="CENTER">
          <children>
-            <Button layoutX="21.0" layoutY="254.0" mnemonicParsing="false" onAction="#handleSortSheltersByMaxCapacity" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Sort shelters" textFill="WHITE" />
-            <Button layoutX="5.0" layoutY="7.0" mnemonicParsing="false" onAction="#handleBackButtonClick" prefHeight="34.0" prefWidth="37.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;">
+            <Button layoutX="21.0" layoutY="254.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Sort shelters" textFill="WHITE" onAction="#handleSortSheltersByMaxCapacity"/>
+            <Button layoutX="5.0" layoutY="7.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="37.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" onAction="#handleBackButtonClick">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font>
@@ -91,7 +91,7 @@
                   </ImageView>
                </graphic>
             </Button>
-            <Button layoutX="21.0" layoutY="218.0" mnemonicParsing="false" onAction="#handleAdoptButtonClick" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Adopt animal" textFill="WHITE" />
+            <Button layoutX="21.0" layoutY="218.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Adopt animal" textFill="WHITE" onAction="#handleAdoptButtonClick"/>
          </children>
          <effect>
             <DropShadow />
