@@ -273,6 +273,7 @@ public class AdminViewController {
 
                     selectedShelter.addAnimal(newAnimal);
                     updateAnimalTable(selectedShelter);
+                    updateShelterTable(selectedShelter);
 
                 } catch (NumberFormatException e) {
                     throw new ValidationException("Invalid number format for age or price.");
@@ -338,6 +339,7 @@ public class AdminViewController {
                 if (result.isPresent() && result.get() == ButtonType.OK) {
                     selectedShelter.removeAnimal(selectedAnimal);
                     updateAnimalTable(selectedShelter);
+                    updateShelterTable(selectedShelter);
                 }
             } else {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -520,15 +522,14 @@ public class AdminViewController {
         try {
             shelterFilterTextField.setOnAction(event -> applyShelterFilters());
             animalFilterTextField.setOnAction(event -> applyAnimalFilters());
-
             stateComboBox.setItems(FXCollections.observableArrayList(AnimalCondition.values()));
             stateComboBox.setValue(null);
-            AnimalShelter shelterA = new AnimalShelter("Shelter A", 50);
+            AnimalShelter shelterA = new AnimalShelter("Shelter 1", 50);
             shelterA.addAnimal(new Animal("Dog", "Bulldog", HEALTHY, 4, 122.12));
             shelterA.addAnimal(new Animal("Fish", "Gold fish", SICK, 1, 12222));
 
-            AnimalShelter shelterB = new AnimalShelter("Shelter B", 30);
-            shelterB.addAnimal(new Animal("Dog", "Labrador", ADOPTION, 12, 9000));
+            AnimalShelter shelterB = new AnimalShelter("Shelter 2", 30);
+            shelterB.addAnimal(new Animal("Dog", "Labrador", ADOPTION, 12, 23323));
 
             shelters.add(shelterA);
             shelters.add(shelterB);
@@ -561,5 +562,8 @@ public class AdminViewController {
 
     private void updateAnimalTable(AnimalShelter shelter) {
         animalTable.getItems().setAll(shelter.getAnimals());
+    }
+    private void updateShelterTable(AnimalShelter shelter) {
+        shelterTable.refresh();
     }
 }

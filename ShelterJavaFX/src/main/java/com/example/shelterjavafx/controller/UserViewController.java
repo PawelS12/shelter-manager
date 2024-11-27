@@ -265,12 +265,12 @@ public class UserViewController {
             stateComboBox.setItems(FXCollections.observableArrayList(AnimalCondition.values()));
             stateComboBox.setValue(null);
 
-            AnimalShelter shelterA = new AnimalShelter("Shelter A", 50);
+            AnimalShelter shelterA = new AnimalShelter("Shelter 1", 50);
             shelterA.addAnimal(new Animal("Dog", "Bulldog", HEALTHY, 3, 122.12));
-            shelterA.addAnimal(new Animal("Cat", "Siamese", SICK, 9, 12222));
+            shelterA.addAnimal(new Animal("Fish", "Gold fish", SICK, 9, 12222));
 
-            AnimalShelter shelterB = new AnimalShelter("Shelter B", 30);
-            shelterB.addAnimal(new Animal("Dog", "Labrador", ADOPTION, 12, 9000));
+            AnimalShelter shelterB = new AnimalShelter("Shelter 2", 30);
+            shelterB.addAnimal(new Animal("Dog", "Labrador", ADOPTION, 12, 23323));
 
             shelters.add(shelterA);
             shelters.add(shelterB);
