@@ -31,9 +31,9 @@
                                 <PropertyValueFactory property="maxCapacity" />
                             </cellValueFactory>
                         </TableColumn>
-                        <TableColumn fx:id="currentAnimalsColumn" prefWidth="100.0" text="Current Animals">
+                        <TableColumn fx:id="ratingColumn" prefWidth="100.0" text="Rating">
                             <cellValueFactory>
-                                <PropertyValueFactory property="currentAnimals" />
+                                <PropertyValueFactory property="ratings" />
                             </cellValueFactory>
                         </TableColumn>
                     </columns>
@@ -71,7 +71,7 @@
             <TextField fx:id="shelterFilterTextField" layoutX="7.0" layoutY="7.0" onAction="#applyShelterFilters" promptText="Search shelter" style="-fx-border-color: #000000;" />
             <TextField fx:id="animalFilterTextField" layoutX="176.0" layoutY="7.0" onAction="#applyAnimalFilters" promptText="Search animal" style="-fx-border-color: #000000;" />
             <ComboBox fx:id="stateComboBox" layoutX="486.0" layoutY="7.0" prefWidth="150.0" promptText="Choose condition" style="-fx-background-color: #0600ff; -fx-border-color: #000000;" />
-            <Button fx:id="filterButton" layoutX="638.0" layoutY="7.0" mnemonicParsing="false" onAction="#applyAnimalFiltersByCondition" prefHeight="26.0" prefWidth="54.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Search" />
+            <Button fx:id="filterButton" layoutX="638.0" layoutY="7.0" mnemonicParsing="false" onAction="#applyAnimalFiltersByCondition" prefHeight="26.0" prefWidth="54.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Search" textFill="WHITE" />
             </children>
         </AnchorPane>
     </center>
@@ -79,19 +79,18 @@
     <left>
         <AnchorPane prefHeight="500.0" prefWidth="142.0" style="-fx-background-color: #0600FF;" BorderPane.alignment="CENTER">
             <children>
-                <Button layoutX="21.0" layoutY="324.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Sort shelters" textFill="WHITE" onAction="#handleSortSheltersByMaxCapacity"/>
-                <VBox layoutX="21.0" layoutY="148.0" prefHeight="74.0" prefWidth="100.0">
+                <VBox layoutX="21.0" layoutY="125.0" prefHeight="74.0" prefWidth="100.0">
                     <children>
-                        <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="104.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Add shelter" textFill="WHITE" onAction="#handleAddShelterButtonClick"/>
-                        <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="103.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000; -fx-border-width: 0px 1px 0px 1px;" text="Edit shelter" textFill="WHITE" onAction="#handleEditShelterButtonClick"/>
-                        <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="106.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Remove shelter" textFill="WHITE" onAction="#handleRemoveShelterButtonClick"/>
+                        <Button mnemonicParsing="false" onAction="#handleAddShelterButtonClick" prefHeight="27.0" prefWidth="104.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Add shelter" textFill="WHITE" />
+                        <Button mnemonicParsing="false" onAction="#handleEditShelterButtonClick" prefHeight="27.0" prefWidth="103.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000; -fx-border-width: 0px 1px 0px 1px;" text="Edit shelter" textFill="WHITE" />
+                        <Button mnemonicParsing="false" onAction="#handleRemoveShelterButtonClick" prefHeight="27.0" prefWidth="106.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Remove shelter" textFill="WHITE" />
                     </children>
                 </VBox>
-                <VBox layoutX="21.0" layoutY="236.0" prefHeight="71.0" prefWidth="100.0">
+                <VBox layoutX="21.0" layoutY="216.0" prefHeight="71.0" prefWidth="100.0">
                     <children>
-                        <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="105.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Add animal" textFill="WHITE" onAction="#handleAddAnimalButtonClick"/>
-                        <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="104.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000; -fx-border-width: 0px 1px 0px 1px;" text="Edit Animal" textFill="WHITE" onAction="#handleEditAnimalButtonClick"/>
-                        <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Remove animal" textFill="WHITE" onAction="#handleRemoveAnimalButtonClick"/>
+                        <Button mnemonicParsing="false" onAction="#handleAddAnimalButtonClick" prefHeight="27.0" prefWidth="105.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Add animal" textFill="WHITE" />
+                        <Button mnemonicParsing="false" onAction="#handleEditAnimalButtonClick" prefHeight="27.0" prefWidth="104.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000; -fx-border-width: 0px 1px 0px 1px;" text="Edit Animal" textFill="WHITE" />
+                        <Button mnemonicParsing="false" onAction="#handleRemoveAnimalButtonClick" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Remove animal" textFill="WHITE" />
                     </children>
                 </VBox>
                 <Button layoutX="5.0" layoutY="7.0" mnemonicParsing="false" onAction="#handleBackButtonClick" prefHeight="34.0" prefWidth="37.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;">
@@ -106,6 +105,13 @@
                   </ImageView>
                </graphic>
                 </Button>
+            <VBox layoutX="21.0" layoutY="307.0" prefHeight="71.0" prefWidth="100.0">
+               <children>
+                      <Button mnemonicParsing="false" onAction="#handleSortSheltersByMaxCapacity" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Sort shelters" textFill="WHITE" />
+                  <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000; -fx-border-width: 0px 1px 0px 1px;" text="Import data" textFill="WHITE" onAction="#handleImportButtonClick" />
+                  <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: #0600FF; -fx-border-color: #000000;" text="Export data" textFill="WHITE" onAction="#handleExportButtonClick"/>
+               </children>
+            </VBox>
             </children>
          <effect>
             <DropShadow />

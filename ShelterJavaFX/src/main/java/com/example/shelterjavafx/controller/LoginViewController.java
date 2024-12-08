@@ -59,7 +59,7 @@ public class LoginViewController {
         } catch (ValidationException e) {
             showAlert(Alert.AlertType.WARNING, "Validation Error", e.getMessage());
         } catch (PanelSwitchException e) {
-        showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
         }
     }
 

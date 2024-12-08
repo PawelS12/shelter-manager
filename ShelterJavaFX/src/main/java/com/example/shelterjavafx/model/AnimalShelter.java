@@ -1,174 +1,164 @@
 package com.example.shelterjavafx.model;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 
-import java.util.*;
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-public class AnimalShelter {
-    private final StringProperty shelterName;
-    private final IntegerProperty maxCapacity;
-    private final IntegerProperty currentAnimals;
-    private ObservableList<Animal> animals;
+@Entity
+@Table(name = "shelters")
+public class AnimalShelter implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "shelter_name", nullable = false, unique = true)
+    private String shelterName;
+
+    @Column(name = "max_capacity", nullable = false)
+    private int maxCapacity;
+
+    @OneToMany(mappedBy = "shelter", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Animal> animals = new ArrayList<>();
+
+    @OneToMany(mappedBy = "shelter", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<Rating> ratings = new ArrayList<>();
+
+    public AnimalShelter() {}
 
     public AnimalShelter(String shelterName, int maxCapacity) {
-        this.shelterName = new SimpleStringProperty(shelterName);
-        this.maxCapacity = new SimpleIntegerProperty(maxCapacity);
-        this.currentAnimals = new SimpleIntegerProperty(0);
-        this.animals = FXCollections.observableArrayList();
+        this.shelterName = shelterName;
+        this.maxCapacity = maxCapacity;
     }
 
-    public int getMaxCapacity() {
-        return this.maxCapacity.get();
+    public void setRatings(List<Rating> ratings) {
+        this.ratings = ratings;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getShelterName() {
-        return this.shelterName.get();
-    }
-
-    public ObservableList<Animal> getAnimals() {
-        return animals;
+        return shelterName;
     }
 
     public void setShelterName(String shelterName) {
-        this.shelterName.set(shelterName);
+        this.shelterName = shelterName;
+    }
+
+    public int getMaxCapacity() {
+        return maxCapacity;
     }
 
     public void setMaxCapacity(int maxCapacity) {
-        this.maxCapacity.set(maxCapacity);
+        this.maxCapacity = maxCapacity;
     }
 
-    public int getCurrentAnimals() {
-        return currentAnimals.get();
+    public List<Animal> getAnimals() {
+        return animals;
     }
 
-    public boolean addAnimal(Animal animal) {
-        for (Animal existingAnimal : animals) {
-            if (existingAnimal.compareTo(animal) == 0) {
-                System.err.println("To zwierzę już istnieje.");
-                return false;
-            }
-        }
+    public void setAnimals(List<Animal> animals) {
+        this.animals = animals;
+    }
 
-        if (animals.size() < maxCapacity.get()) {
-            animals.add(animal);
-            currentAnimals.set(animals.size());
-            return true;
-        } else {
+    public boolean addAnimal(Animal animal, Session session) {
+        if (animals.size() >= maxCapacity) {
             System.err.println("Pełna pojemność. Nie można dodać więcej zwierząt.");
             return false;
         }
-    }
-
-    public boolean removeAnimal(Animal animal) {
-        boolean removed = animals.removeIf(existingAnimal -> existingAnimal.compareTo(animal) == 0);
-        if (removed) {
-            currentAnimals.set(animals.size());
+        if (findAnimalByName(animal.getName(), session) != null) {
+            System.err.println("To zwierzę już istnieje.");
+            return false;
         }
-        return removed;
+        animal.setShelter(this);
+        session.save(animal); // Zapisz zwierzę do bazy danych
+        return true;
     }
 
-    public boolean adoptAnimal(Animal animal, Student student) {
-        boolean removed = animals.removeIf(existingAnimal -> existingAnimal.compareTo(animal) == 0);
-        if (removed) {
-            animal.setAdopted();
-            student.getAnimals().add(animal);
-            currentAnimals.set(animals.size());
-            System.out.println("Zwierzę zostało zaadoptowane.");
+    public boolean removeAnimal(Animal animal, Session session) {
+        Animal toRemove = session.get(Animal.class, animal.getId());
+        if (toRemove != null) {
+            session.delete(toRemove); // Usuń zwierzę z bazy danych
             return true;
         }
-        System.err.println("Nie znaleziono zwierzęcia.");
         return false;
     }
 
-    public boolean changeCondition(Animal animal, AnimalCondition condition) {
-        for (Animal existingAnimal : animals) {
-            if (existingAnimal.compareTo(animal) == 0) {
-                existingAnimal.setCondition(condition);
-                return true;
-            }
-        }
-        System.err.println("Nie znaleziono zwierzęcia.");
-        return false;
+    public Animal findAnimalByName(String name, Session session) {
+        Query<Animal> query = session.createQuery("FROM Animal a WHERE a.name = :name", Animal.class);
+        query.setParameter("name", name);
+        return query.uniqueResult();
     }
 
-    public boolean changeAge(Animal animal, int age) {
-        for (Animal existingAnimal : animals) {
-            if (existingAnimal.compareTo(animal) == 0) {
-                existingAnimal.setAge(age);
-                return true;
-            }
-        }
-        System.err.println("Nie znaleziono zwierzęcia.");
-        return false;
-    }
-
-    public int countByCondition(AnimalCondition condition) {
-        int counter = 0;
-        for (Animal existingAnimal : animals) {
-            if (existingAnimal.getCondition() == condition) {
-                counter++;
-            }
-        }
-        return counter;
-    }
-
-    public List<Animal> sortByName() {
-        List<Animal> sortedList = new ArrayList<>(animals);
-        Collections.sort(sortedList, Comparator.comparing(Animal::getName));
-        return sortedList;
-    }
-
-    public List<Animal> sortByPrice() {
-        List<Animal> sortedList = new ArrayList<>(animals);
-        Collections.sort(sortedList, Comparator.comparingDouble(Animal::getPrice));
-        return sortedList;
-    }
-
-    public String search(String name) {
-        Comparator<Animal> nameComparator = Comparator.comparing(Animal::getName, String::compareToIgnoreCase);
-
-        for (Animal animal : animals) {
-            if (nameComparator.compare(animal, new Animal(name, null, null, 0, 0)) == 0) {
-                return animal.getName();
-            }
-        }
-        System.err.println("Zwierzę o imieniu " + name + " nie zostało znalezione.");
-        return null;
-    }
-
-    public List<Animal> searchPartial(String fragment) {
-        List<Animal> matchingAnimals = new ArrayList<>();
-        for (Animal animal : animals) {
-            if (animal.getName().toLowerCase().contains(fragment.toLowerCase()) || animal.getSpecies().toLowerCase().contains(fragment.toLowerCase())) {
-                matchingAnimals.add(animal);
-            }
-        }
-        return matchingAnimals;
-    }
-
-    public void summary() {
+    public void summary(Session session) {
         System.out.println("Wszystkie zwierzęta w schronisku: ");
-        for (Animal animal : animals) {
-            animal.Print();
+        Query<Animal> query = session.createQuery("FROM Animal a WHERE a.shelter.id = :shelterId", Animal.class);
+        query.setParameter("shelterId", this.id);
+        List<Animal> animalsFromDb = query.list();
+        for (Animal animal : animalsFromDb) {
+            System.out.println(animal);
         }
     }
 
-    public Animal max() {
-        if (animals.isEmpty()) {
-            System.err.println("Brak zwierząt w schronisku.");
-            return null;
-        }
-
-        return Collections.max(animals, Comparator.comparingDouble(Animal::getPrice));
+    public List<Animal> sortByName(Session session) {
+        Query<Animal> query = session.createQuery(
+                "FROM Animal a WHERE a.shelter.id = :shelterId ORDER BY a.name", Animal.class);
+        query.setParameter("shelterId", this.id);
+        return query.list();
     }
 
-    public static List<AnimalShelter> sortSheltersByMaxCapacity(List<AnimalShelter> shelters) {
-        Collections.sort(shelters, Comparator.comparingInt(AnimalShelter::getMaxCapacity));
-        return shelters;
+    public List<Animal> sortByPrice(Session session) {
+        Query<Animal> query = session.createQuery(
+                "FROM Animal a WHERE a.shelter.id = :shelterId ORDER BY a.price", Animal.class);
+        query.setParameter("shelterId", this.id);
+        return query.list();
+    }
+
+    public String search(String name, Session session) {
+        Query<Animal> query = session.createQuery(
+                "FROM Animal a WHERE a.shelter.id = :shelterId AND LOWER(a.name) = :name", Animal.class);
+        query.setParameter("shelterId", this.id);
+        query.setParameter("name", name.toLowerCase());
+        List<Animal> result = query.list();
+        return result.isEmpty() ? null : result.get(0).getName();
+    }
+
+    public List<Animal> searchPartial(String fragment, Session session) {
+        Query<Animal> query = session.createQuery(
+                "FROM Animal a WHERE LOWER(a.name) LIKE :fragment OR LOWER(a.species) LIKE :fragment", Animal.class);
+        query.setParameter("fragment", "%" + fragment.toLowerCase() + "%");
+        return query.list();
+    }
+
+    public Animal max(Session session) {
+        Query<Animal> query = session.createQuery(
+                "FROM Animal a ORDER BY a.price DESC", Animal.class);
+        query.setMaxResults(1);
+        return query.uniqueResult();
+    }
+
+    public List<Rating> getRatings() {
+        return ratings;
+    }
+
+    // Nowa metoda do obliczania średniej oceny i liczby ocen
+    public String getFormattedAverageRating() {
+        if (ratings == null || ratings.isEmpty()) {
+            return "No ratings (0)";
+        }
+
+        double sum = 0;
+        for (Rating rating : ratings) {
+            sum += rating.getValue(); // Sumujemy wartości ocen
+        }
+
+        double average = sum / ratings.size(); // Obliczamy średnią
+        return String.format("%.1f (%d)", average, ratings.size()); // Zwracamy wynik w formacie "średnia (ilość ocen)"
     }
 }

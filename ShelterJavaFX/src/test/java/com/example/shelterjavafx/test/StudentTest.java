@@ -1,6 +1,6 @@
 package com.example.shelterjavafx.test;
 import com.example.shelterjavafx.model.Animal;
-import com.example.shelterjavafx.model.Student;
+import com.example.shelterjavafx.model.User;
 import com.example.shelterjavafx.model.AnimalCondition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,13 +10,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StudentTest {
 
-    private Student student;
+    private User student;
     private Animal animal;
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
 
     @BeforeEach
     void setUp() {
-        student = new Student("Jan", "Kowalski");
+        student = new User("Jan", "Kowalski");
         animal = new Animal("Rex", "Dog", AnimalCondition.HEALTHY, 5, 200.0);
     }
 

@@ -1,45 +1,76 @@
 package com.example.shelterjavafx.model;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javax.persistence.*;
+import java.io.Serializable;
 
-public class Animal implements Comparable<Animal> {
-    private final StringProperty name;
-    private final StringProperty species;
+@Entity
+@Table(name = "animals")
+public class Animal implements Comparable<Animal>, Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private String species;
+
+    @Column(name = "animal_condition", nullable = false)
+    @Enumerated(EnumType.STRING)
     private AnimalCondition condition;
-    private final IntegerProperty age;
-    private final DoubleProperty price;
-    private final BooleanProperty isAdopted;
 
+    @Column(nullable = false)
+    private int age;
+
+    @Column(nullable = false)
+    private double price;
+
+    @Column(name = "is_adopted", nullable = false)
+    private boolean isAdopted;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shelter_id", nullable = false)
+    private AnimalShelter shelter;
+
+    // Default constructor required by JPA
+    public Animal() {
+    }
+
+    // Constructor for creating a new Animal instance
     public Animal(String name, String species, AnimalCondition condition, int age, double price) {
-        this.name = new SimpleStringProperty(name);
-        this.species = new SimpleStringProperty(species);
+        this.name = name;
+        this.species = species;
         this.condition = condition;
-        this.age = new SimpleIntegerProperty(age);
-        this.price = new SimpleDoubleProperty(price);
-        this.isAdopted = new SimpleBooleanProperty(false);
+        this.age = age;
+        this.price = price;
+        this.isAdopted = false;
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long Id) {
+        this.id = Id;
     }
 
     public String getName() {
-        return name.get();
+        return name;
     }
 
     public void setName(String name) {
-        this.name.set(name);
+        this.name = name;
     }
 
     public String getSpecies() {
-        return species.get();
+        return species;
     }
 
     public void setSpecies(String species) {
-        this.species.set(species);
+        this.species = species;
     }
 
     public AnimalCondition getCondition() {
@@ -51,49 +82,59 @@ public class Animal implements Comparable<Animal> {
     }
 
     public int getAge() {
-        return age.get();
+        return age;
     }
 
     public void setAge(int age) {
-        this.age.set(age);
+        this.age = age;
     }
 
     public double getPrice() {
-        return price.get();
+        return price;
     }
 
     public void setPrice(double price) {
-        this.price.set(price);
+        this.price = price;
     }
 
     public boolean isAdopted() {
-        return isAdopted.get();
+        return isAdopted;
     }
 
-    public void setAdopted() {
-        this.isAdopted.set(true);
+    public void setAdopted(boolean adopted) {
+        isAdopted = adopted;
     }
 
-    public void Print() {
-        System.out.println("Imię: " + name.get() + " | Gatunek: " + species.get() + " | Stan: " + condition + " | Wiek: " + age.get() + " | Cena: " + price.get());
+    public AnimalShelter getShelter() {
+        return shelter;
     }
 
+    public void setShelter(AnimalShelter shelter) {
+        this.shelter = shelter;
+    }
+
+    // Comparable implementation to sort by name, species, and age
     @Override
     public int compareTo(Animal other) {
         if (other == null) {
             return 1;
         }
-
-        int nameComparison = this.name.get().compareTo(other.name.get());
+        int nameComparison = this.name.compareTo(other.name);
         if (nameComparison != 0) {
             return nameComparison;
         }
-
-        int speciesComparison = this.species.get().compareTo(other.species.get());
+        int speciesComparison = this.species.compareTo(other.species);
         if (speciesComparison != 0) {
             return speciesComparison;
         }
+        return Integer.compare(this.age, other.age);
+    }
 
-        return Integer.compare(this.age.get(), other.age.get());
+    // Override toString for better logging and debugging
+    @Override
+    public String toString() {
+        return String.format(
+                "Animal{id=%d, name='%s', species='%s', condition='%s', age=%d, price=%.2f, isAdopted=%b, shelterId=%d}",
+                id, name, species, condition, age, price, isAdopted, shelter != null ? shelter.getId() : null);
     }
 }
