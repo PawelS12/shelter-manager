@@ -20,6 +20,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -65,25 +66,19 @@ public class AdminViewController {
 
     private SessionFactory sessionFactory;
 
-    // Inicjalizacja
     public void initialize() {
-        sessionFactory = HibernateUtil.getSessionFactory(); // Używamy klasy HibernateUtil do uzyskania sesji
-
+        sessionFactory = HibernateUtil.getSessionFactory();
         ObservableList<AnimalCondition> conditions = FXCollections.observableArrayList(AnimalCondition.values());
         stateComboBox.setItems(conditions);
 
-        // Pobieranie danych z bazy
         List<AnimalShelter> sheltersFromDB = getSheltersFromDatabase();
 
-        // Inicjalizacja tabel
         shelterNameColumn.setCellValueFactory(new PropertyValueFactory<>("shelterName"));
         maxCapacityColumn.setCellValueFactory(new PropertyValueFactory<>("maxCapacity"));
-        ratingColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getFormattedAverageRating()));
+        ratingColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFormattedAverageRating()));
 
         shelterTable.getItems().setAll(sheltersFromDB);
 
-        // Inicjalizacja tabeli zwierząt
         animalNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         animalSpeciesColumn.setCellValueFactory(new PropertyValueFactory<>("species"));
         animalConditionColumn.setCellValueFactory(new PropertyValueFactory<>("condition"));
@@ -99,41 +94,36 @@ public class AdminViewController {
 
     @FXML
     private void handleExportButtonClick(ActionEvent event) {
-        // Otwórz okno wyboru pliku
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
-        File file = fileChooser.showSaveDialog(null); // Zwraca wybrany plik
+        File file = fileChooser.showSaveDialog(null);
 
         if (file != null) {
             try {
-                // Pobierz wszystkie schroniska
                 ShelterDataCSV.exportAllSheltersToCSV(file.getAbsolutePath());
-                showInfoAlert("Eksport zakończony", "Dane zostały pomyślnie wyeksportowane do pliku CSV.");
+                showInfoAlert("Export Completed", "Data has been successfully exported to a CSV file.");
             } catch (IOException e) {
-                showErrorAlert("Wystąpił problem podczas eksportowania danych do pliku CSV.");
+                showErrorAlert("An issue occurred while exporting data to the CSV file.");
             }
         }
     }
 
-
     @FXML
     private void handleImportButtonClick(ActionEvent event) {
-        // Otwórz okno wyboru pliku
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
-        File file = fileChooser.showOpenDialog(null);  // Zwraca wybrany plik
+        File file = fileChooser.showOpenDialog(null);
 
         if (file != null) {
             try {
                 ShelterDataCSV.importShelterFromCSV(file.getAbsolutePath());
                 updateShelterTable();
-                showInfoAlert("Import zakończony", "Dane zostały pomyślnie zaimportowane z pliku CSV do bazy danych.");
+                showInfoAlert("Import Completed", "Data has been successfully imported to a CSV file.");
             } catch (IOException e) {
-                showErrorAlert("Wystąpił problem podczas importowania danych z pliku CSV.");
+                showErrorAlert("An issue occurred while importing data to the CSV file.");
             }
         }
     }
-
 
     private void showInfoAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
@@ -155,22 +145,28 @@ public class AdminViewController {
         }
     }
 
-    // Pobieranie schronisk z bazy danych
     private List<AnimalShelter> getSheltersFromDatabase() {
-        Session session = sessionFactory.openSession();
-        Query<AnimalShelter> query = session.createQuery("FROM AnimalShelter", AnimalShelter.class);
-        List<AnimalShelter> shelters = query.getResultList();
-        session.close();
-        return shelters;
+        try (Session session = sessionFactory.openSession()) {
+            String hqlShelters = "FROM AnimalShelter";
+            List<AnimalShelter> shelters = session.createQuery(hqlShelters, AnimalShelter.class).getResultList();
+
+            for (AnimalShelter shelter : shelters) {
+                Hibernate.initialize(shelter.getAnimals());
+                Hibernate.initialize(shelter.getRatings());
+            }
+
+            return shelters;
+        }
     }
 
     private void updateAnimalTable(AnimalShelter shelter) {
-        Session session = sessionFactory.openSession();
-        Query<Animal> query = session.createQuery("FROM Animal WHERE shelter = :shelter", Animal.class);
-        query.setParameter("shelter", shelter);
-        List<Animal> animals = query.getResultList();
-        animalTable.getItems().setAll(animals);
-        session.close();
+        try (Session session = sessionFactory.openSession()) {
+            String hql = "SELECT a FROM Animal a WHERE a.shelter.id = :shelterId";
+            Query<Animal> query = session.createQuery(hql, Animal.class);
+            query.setParameter("shelterId", shelter.getId());
+            List<Animal> animals = query.getResultList();
+            animalTable.getItems().setAll(animals);
+        }
     }
 
     private void updateShelterTable() {
@@ -213,30 +209,24 @@ public class AdminViewController {
 
                 try {
                     int maxCapacity = Integer.parseInt(capacityInput);
-
-                    // Sprawdzenie, czy schronisko o tej samej nazwie już istnieje w bazie
                     Session session = sessionFactory.openSession();
                     List<AnimalShelter> existingShelters = session.createQuery("FROM AnimalShelter WHERE shelterName = :shelterName", AnimalShelter.class)
                             .setParameter("shelterName", shelterName)
                             .getResultList();
 
                     if (!existingShelters.isEmpty()) {
-                        // Użycie showErrorAlert, aby pokazać komunikat, jeśli schronisko już istnieje
                         showErrorAlert("A shelter with the same name already exists in the database.");
                         session.close();
-                        return; // Zakończ dodawanie schroniska
+                        return;
                     }
 
-                    // Tworzenie nowego schroniska
                     AnimalShelter newShelter = new AnimalShelter(shelterName, maxCapacity);
 
-                    // Zapisanie schroniska do bazy danych
                     session.beginTransaction();
                     session.save(newShelter);
                     session.getTransaction().commit();
                     session.close();
 
-                    // Uaktualnianie tabeli
                     List<AnimalShelter> shelters = getSheltersFromDatabase();
                     shelterTable.getItems().setAll(shelters);
 
@@ -266,14 +256,12 @@ public class AdminViewController {
             Optional<ButtonType> result = alert.showAndWait();
 
             if (result.isPresent() && result.get() == ButtonType.OK) {
-                // Usuwanie schroniska z bazy danych
                 Session session = sessionFactory.openSession();
                 session.beginTransaction();
                 session.delete(selectedShelter);
                 session.getTransaction().commit();
                 session.close();
 
-                // Uaktualnianie tabeli
                 List<AnimalShelter> shelters = getSheltersFromDatabase();
                 shelterTable.getItems().setAll(shelters);
             }
@@ -337,31 +325,22 @@ public class AdminViewController {
                     Animal newAnimal = new Animal(animalName, animalSpecies, animalCondition, age, price);
                     newAnimal.setAdopted(false);
 
-                    // Sprawdzenie, czy zwierzę już istnieje w schronisku
-                    boolean animalExists = selectedShelter.getAnimals().stream()
-                            .anyMatch(existingAnimal -> existingAnimal.compareTo(newAnimal) == 0);
+                    boolean animalExists = selectedShelter.getAnimals().stream().anyMatch(existingAnimal -> existingAnimal.compareTo(newAnimal) == 0);
 
                     if (animalExists) {
-                        // Jeśli zwierzę istnieje, pokaż komunikat w okienku
                         Alert alert = new Alert(Alert.AlertType.INFORMATION);
                         alert.setTitle("Animal Exists");
                         alert.setHeaderText("This Animal Already Exists");
                         alert.setContentText("An animal with the same name, species, and age already exists in the shelter.");
                         alert.showAndWait();
-                        return; // Zakończ dodawanie zwierzęcia
+                        return;
                     }
 
-                    // Zapisywanie nowego zwierzęcia do bazy danych za pomocą Hibernate
                     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
                         session.beginTransaction();
-
-                        // Dodanie zwierzęcia do schroniska w bazie
                         selectedShelter.addAnimal(newAnimal, session);
-                        session.save(newAnimal); // Zapisz zwierzę do bazy danych
-
+                        session.save(newAnimal);
                         session.getTransaction().commit();
-
-                        // Odświeżenie tabeli z zwierzętami i schroniskami
                         updateAnimalTable(selectedShelter);
                         updateShelterTable();
                     }
@@ -390,7 +369,6 @@ public class AdminViewController {
             }
 
             if (selectedShelter != null && selectedAnimal != null) {
-                // Wyświetlenie okna dialogowego potwierdzającego usunięcie zwierzęcia
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle("Remove Animal");
                 alert.setHeaderText("Are you sure you want to remove this animal?");
@@ -399,36 +377,24 @@ public class AdminViewController {
                 Optional<ButtonType> result = alert.showAndWait();
 
                 if (result.isPresent() && result.get() == ButtonType.OK) {
-                    // Otwieranie sesji Hibernate i rozpoczynanie transakcji
                     Session session = HibernateUtil.getSessionFactory().openSession();
                     Transaction transaction = null;
 
                     try {
-                        // Rozpoczęcie transakcji
                         transaction = session.beginTransaction();
-
-                        // Usuwanie zwierzęcia z bazy danych
                         session.delete(selectedAnimal);
-
-                        // Zatwierdzenie transakcji
                         transaction.commit();
-
-                        // Usuwanie zwierzęcia z listy w pamięci
                         selectedShelter.getAnimals().remove(selectedAnimal);
-
-                        // Zaktualizowanie tabeli zwierząt i schronisk
                         updateAnimalTable(selectedShelter);
                         updateShelterTable();
 
                     } catch (Exception e) {
-                        // W przypadku błędu, wycofanie transakcji
-                        if (transaction != null) {
+                        if (transaction != null && transaction.isActive()) {
                             transaction.rollback();
                         }
                         e.printStackTrace();
                         throw new ValidationException("Error occurred while removing the animal.");
                     } finally {
-                        // Zamknięcie sesji
                         session.close();
                     }
                 }
@@ -495,7 +461,7 @@ public class AdminViewController {
                         List<AnimalShelter> shelters = session.createQuery(hql, AnimalShelter.class)
                                 .setParameter("shelterName", newShelterName)
                                 .setParameter("maxCapacity", newCapacity)
-                                .setParameter("selectedShelterId", selectedShelter.getId()) // Wykluczamy to samo schronisko
+                                .setParameter("selectedShelterId", selectedShelter.getId())
                                 .list();
 
                         if (!shelters.isEmpty()) {
@@ -585,11 +551,8 @@ public class AdminViewController {
 
                         Animal newAnimal = new Animal(newAnimalName, newSpecies, conditionComboBox.getValue(), newAge, newPrice);
 
-                        // Sprawdzenie, czy takie zwierzę już istnieje w schronisku
                         for (Animal animal : selectedShelter.getAnimals()) {
-                            // Sprawdzamy, czy zwierzę jest inne niż to, które edytujemy
                             if (animal != selectedAnimal) {
-                                // Porównujemy wszystkie istotne pola (name, species, age, price, condition)
                                 if (animal.getName().equals(newAnimal.getName()) &&
                                         animal.getSpecies().equals(newAnimal.getSpecies()) &&
                                         animal.getAge() == newAnimal.getAge() &&
@@ -600,31 +563,26 @@ public class AdminViewController {
                             }
                         }
 
-                        // Otwarcie sesji Hibernate
                         Session session = HibernateUtil.getSessionFactory().openSession();
                         Transaction transaction = null;
 
                         try {
-                            // Rozpoczęcie transakcji
                             transaction = session.beginTransaction();
-
-                            // Aktualizacja obiektu zwierzęcia w bazie danych
                             selectedAnimal.setName(newAnimalName);
                             selectedAnimal.setSpecies(newSpecies);
                             selectedAnimal.setAge(newAge);
                             selectedAnimal.setPrice(newPrice);
                             selectedAnimal.setCondition(conditionComboBox.getValue());
+                            if (selectedAnimal.getCondition() == AnimalCondition.ADOPTION) {
+                                selectedAnimal.setAdopted(true);
+                            } else {
+                                selectedAnimal.setAdopted(false);
+                            }
 
-                            // Zapisanie zmian w bazie danych
                             session.update(selectedAnimal);
-
-                            // Zatwierdzenie transakcji
                             transaction.commit();
-
-                            // Zaktualizowanie tabeli
                             animalTable.refresh();
                         } catch (Exception e) {
-                            // W przypadku błędu, wycofanie transakcji
                             if (transaction != null) {
                                 transaction.rollback();
                             }
@@ -659,7 +617,6 @@ public class AdminViewController {
                 throw new FilterException("Filter text is too long. Please use a shorter filter.");
             }
 
-            // Query schronisk z filtrem
             String hql = "FROM AnimalShelter WHERE lower(shelterName) LIKE :filterText";
             var query = session.createQuery(hql, AnimalShelter.class);
             query.setParameter("filterText", "%" + filterText + "%");
@@ -689,9 +646,7 @@ public class AdminViewController {
                 throw new FilterException("Please select a shelter to filter animals.");
             }
 
-            // Query zwierząt powiązanych z wybranym schroniskiem
-            String hql = "FROM Animal WHERE shelter.id = :shelterId AND " +
-                    "(lower(name) LIKE :filterText OR lower(species) LIKE :filterText)";
+            String hql = "FROM Animal WHERE shelter.id = :shelterId AND " + "(lower(name) LIKE :filterText OR lower(species) LIKE :filterText)";
             var query = session.createQuery(hql, Animal.class);
             query.setParameter("shelterId", selectedShelter.getId());
             query.setParameter("filterText", "%" + filterText + "%");
@@ -713,7 +668,6 @@ public class AdminViewController {
             AnimalCondition selectedCondition = stateComboBox.getValue();
 
             if (selectedCondition == null) {
-                // Jeśli stan nie został wybrany, po prostu wyświetl wszystkie zwierzęta
                 showErrorAlert("Please select a condition to filter animals.");
                 return;
             }
@@ -724,16 +678,12 @@ public class AdminViewController {
                 return;
             }
 
-            // Zapytanie HQL, które filtruje zwierzęta na podstawie schroniska i stanu
             String hql = "FROM Animal WHERE shelter.id = :shelterId AND condition = :condition";
             var query = session.createQuery(hql, Animal.class);
             query.setParameter("shelterId", selectedShelter.getId());
             query.setParameter("condition", selectedCondition);
-
-            // Wykonanie zapytania
             var filteredAnimals = query.list();
 
-            // Przekształcenie wyników do ObservableList
             ObservableList<Animal> observableList = FXCollections.observableArrayList(filteredAnimals);
             animalTable.setItems(observableList);
 
@@ -745,7 +695,6 @@ public class AdminViewController {
     @FXML
     private void handleSortSheltersByMaxCapacity(ActionEvent event) {
         try (var session = HibernateUtil.getSessionFactory().openSession()) {
-            // Query schronisk posortowanych po maksymalnej pojemności
             String hql = "FROM AnimalShelter ORDER BY maxCapacity DESC";
             var query = session.createQuery(hql, AnimalShelter.class);
 
@@ -768,6 +717,4 @@ public class AdminViewController {
         Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
         alert.showAndWait();
     }
-
-
 }

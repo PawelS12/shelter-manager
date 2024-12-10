@@ -34,11 +34,9 @@ public class Animal implements Comparable<Animal>, Serializable {
     @JoinColumn(name = "shelter_id", nullable = false)
     private AnimalShelter shelter;
 
-    // Default constructor required by JPA
     public Animal() {
     }
 
-    // Constructor for creating a new Animal instance
     public Animal(String name, String species, AnimalCondition condition, int age, double price) {
         this.name = name;
         this.species = species;
@@ -48,7 +46,6 @@ public class Animal implements Comparable<Animal>, Serializable {
         this.isAdopted = false;
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -113,7 +110,6 @@ public class Animal implements Comparable<Animal>, Serializable {
         this.shelter = shelter;
     }
 
-    // Comparable implementation to sort by name, species, and age
     @Override
     public int compareTo(Animal other) {
         if (other == null) {
@@ -130,7 +126,6 @@ public class Animal implements Comparable<Animal>, Serializable {
         return Integer.compare(this.age, other.age);
     }
 
-    // Override toString for better logging and debugging
     @Override
     public String toString() {
         return String.format(

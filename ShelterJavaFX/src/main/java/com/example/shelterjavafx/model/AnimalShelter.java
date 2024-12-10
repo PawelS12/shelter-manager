@@ -1,6 +1,10 @@
 package com.example.shelterjavafx.model;
 
 import org.hibernate.Session;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.query.Query;
 
 import javax.persistence.*;
@@ -23,9 +27,11 @@ public class AnimalShelter implements Serializable {
     private int maxCapacity;
 
     @OneToMany(mappedBy = "shelter", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<Animal> animals = new ArrayList<>();
 
-    @OneToMany(mappedBy = "shelter", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "shelter", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<Rating> ratings = new ArrayList<>();
 
     public AnimalShelter() {}
@@ -69,22 +75,22 @@ public class AnimalShelter implements Serializable {
 
     public boolean addAnimal(Animal animal, Session session) {
         if (animals.size() >= maxCapacity) {
-            System.err.println("Pełna pojemność. Nie można dodać więcej zwierząt.");
+            System.err.println("Max capacity. You cannot add more animals.");
             return false;
         }
         if (findAnimalByName(animal.getName(), session) != null) {
-            System.err.println("To zwierzę już istnieje.");
+            System.err.println("An animal already exists.");
             return false;
         }
         animal.setShelter(this);
-        session.save(animal); // Zapisz zwierzę do bazy danych
+        session.save(animal);
         return true;
     }
 
     public boolean removeAnimal(Animal animal, Session session) {
         Animal toRemove = session.get(Animal.class, animal.getId());
         if (toRemove != null) {
-            session.delete(toRemove); // Usuń zwierzę z bazy danych
+            session.delete(toRemove);
             return true;
         }
         return false;
@@ -147,7 +153,6 @@ public class AnimalShelter implements Serializable {
         return ratings;
     }
 
-    // Nowa metoda do obliczania średniej oceny i liczby ocen
     public String getFormattedAverageRating() {
         if (ratings == null || ratings.isEmpty()) {
             return "No ratings (0)";
@@ -155,10 +160,10 @@ public class AnimalShelter implements Serializable {
 
         double sum = 0;
         for (Rating rating : ratings) {
-            sum += rating.getValue(); // Sumujemy wartości ocen
+            sum += rating.getValue();
         }
 
-        double average = sum / ratings.size(); // Obliczamy średnią
-        return String.format("%.1f (%d)", average, ratings.size()); // Zwracamy wynik w formacie "średnia (ilość ocen)"
+        double average = sum / ratings.size();
+        return String.format("%.1f (%d)", average, ratings.size());
     }
 }

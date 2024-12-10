@@ -67,21 +67,18 @@ public class User {
 
     public boolean adoptAnimal(Animal animal, Session session) {
         if (animal != null && animal.getCondition() != AnimalCondition.ADOPTION) {
-            // Zmieniamy stan zwierzęcia na ADOPTION
             animal.setCondition(AnimalCondition.ADOPTION);
 
-            // Dodajemy zwierzę do listy zwierząt adoptowanych przez użytkownika
             this.animals.add(animal);
 
-            // Rozpoczynamy transakcję
             session.beginTransaction();
-            session.saveOrUpdate(animal); // Zapisujemy lub aktualizujemy stan zwierzęcia
-            session.saveOrUpdate(this); // Aktualizujemy użytkownika z nowymi zwierzętami
+            session.saveOrUpdate(animal);
+            session.saveOrUpdate(this);
             session.getTransaction().commit();
 
             return true;
         }
-        return false; // Jeśli zwierzę jest już adoptowane lub null
+        return false;
     }
 
     public void displayAnimals() {

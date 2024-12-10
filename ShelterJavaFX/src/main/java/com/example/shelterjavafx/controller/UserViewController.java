@@ -18,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -63,25 +64,18 @@ public class UserViewController {
 
     public void initialize() {
         sessionFactory = HibernateUtil.getSessionFactory();
-
         shelterFilterTextField.setOnAction(event -> applyShelterFilters());
         animalFilterTextField.setOnAction(event -> applyAnimalFilters());
-
         ObservableList<AnimalCondition> conditions = FXCollections.observableArrayList(AnimalCondition.values());
         stateComboBox.setItems(conditions);
-
-        // Pobieranie danych z bazy
         List<AnimalShelter> sheltersFromDB = getSheltersFromDatabase();
 
-        // Inicjalizacja tabel
         shelterNameColumn.setCellValueFactory(new PropertyValueFactory<>("shelterName"));
         maxCapacityColumn.setCellValueFactory(new PropertyValueFactory<>("maxCapacity"));
-        ratingColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getFormattedAverageRating()));
+        ratingColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFormattedAverageRating()));
 
         shelterTable.getItems().setAll(sheltersFromDB);
 
-        // Inicjalizacja tabeli zwierząt
         animalNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         animalSpeciesColumn.setCellValueFactory(new PropertyValueFactory<>("species"));
         animalConditionColumn.setCellValueFactory(new PropertyValueFactory<>("condition"));
@@ -98,16 +92,21 @@ public class UserViewController {
     }
 
     private List<AnimalShelter> getSheltersFromDatabase() {
-        Session session = sessionFactory.openSession();
-        Query<AnimalShelter> query = session.createQuery("FROM AnimalShelter", AnimalShelter.class);
-        List<AnimalShelter> shelters = query.getResultList();
-        session.close();
-        return shelters;
+        try (Session session = sessionFactory.openSession()) {
+            String hqlShelters = "FROM AnimalShelter";
+            List<AnimalShelter> shelters = session.createQuery(hqlShelters, AnimalShelter.class).getResultList();
+
+            for (AnimalShelter shelter : shelters) {
+                Hibernate.initialize(shelter.getAnimals());
+                Hibernate.initialize(shelter.getRatings());
+            }
+
+            return shelters;
+        }
     }
 
     @FXML
     private void handleRateButton(ActionEvent event) {
-        // Sprawdzenie, czy wybrane jest schronisko w tabeli
         AnimalShelter selectedShelter = shelterTable.getSelectionModel().getSelectedItem();
 
         try {
@@ -115,50 +114,40 @@ public class UserViewController {
                 throw new ValidationException("No shelter selected.");
             }
 
-            // Tworzymy okno dialogowe
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setTitle("Shelter Rating");
             dialog.setHeaderText("Rate the selected shelter");
 
-            // Tworzymy kontrolki do wprowadzenia oceny i komentarza
             TextField ratingField = new TextField();
             ratingField.setPromptText("Rating (0-5)");
 
             TextArea commentArea = new TextArea();
             commentArea.setPromptText("Comment...");
 
-            // Dodajemy kontrolki do okna dialogowego
             VBox vbox = new VBox(10, new Label("Rating (0-5):"), ratingField, new Label("Comment:"), commentArea);
             dialog.getDialogPane().setContent(vbox);
 
-            // Przyciski OK i Cancel
             ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
             ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
             dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
 
-            // Pokazujemy okno dialogowe
             Optional<ButtonType> result = dialog.showAndWait();
 
             if (result.isPresent() && result.get() == okButton) {
                 String ratingText = ratingField.getText();
                 String comment = commentArea.getText();
 
-                // Sprawdzanie poprawności oceny
                 try {
                     int ratingValue = Integer.parseInt(ratingText);
                     if (ratingValue < 0 || ratingValue > 5) {
                         throw new ValidationException("The rating must be a number between 0 and 5.");
                     }
 
-                    // Dodanie oceny do bazy danych
                     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
                         Transaction transaction = session.beginTransaction();
-
-                        // Tworzymy nową ocenę
                         Rating rating = new Rating(ratingValue, selectedShelter, new java.util.Date(), comment);
-                        selectedShelter.getRatings().add(rating);  // Dodanie oceny do listy ocen schroniska
-                        session.save(rating);  // Zapisanie oceny w bazie danych
-
+                        selectedShelter.getRatings().add(rating);
+                        session.save(rating);
                         transaction.commit();
                         updateShelterTable();
 
@@ -169,7 +158,6 @@ public class UserViewController {
                 }
             }
         } catch (ValidationException e) {
-            // Wyświetlenie błędu w przypadku problemu
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText("Validation Error");
@@ -202,7 +190,6 @@ public class UserViewController {
                 throw new FilterException("Filter text is too long. Please use a shorter filter.");
             }
 
-            // Query schronisk z filtrem
             String hql = "FROM AnimalShelter WHERE lower(shelterName) LIKE :filterText";
             var query = session.createQuery(hql, AnimalShelter.class);
             query.setParameter("filterText", "%" + filterText + "%");
@@ -232,9 +219,7 @@ public class UserViewController {
                 throw new FilterException("Please select a shelter to filter animals.");
             }
 
-            // Query zwierząt powiązanych z wybranym schroniskiem
-            String hql = "FROM Animal WHERE shelter.id = :shelterId AND " +
-                    "(lower(name) LIKE :filterText OR lower(species) LIKE :filterText)";
+            String hql = "FROM Animal WHERE shelter.id = :shelterId AND " + "(lower(name) LIKE :filterText OR lower(species) LIKE :filterText)";
             var query = session.createQuery(hql, Animal.class);
             query.setParameter("shelterId", selectedShelter.getId());
             query.setParameter("filterText", "%" + filterText + "%");
@@ -253,7 +238,6 @@ public class UserViewController {
     @FXML
     private void handleSortSheltersByMaxCapacity(ActionEvent event) {
         try (var session = HibernateUtil.getSessionFactory().openSession()) {
-            // Query schronisk posortowanych po maksymalnej pojemności
             String hql = "FROM AnimalShelter ORDER BY maxCapacity DESC";
             var query = session.createQuery(hql, AnimalShelter.class);
 
@@ -278,7 +262,6 @@ public class UserViewController {
             AnimalCondition selectedCondition = stateComboBox.getValue();
 
             if (selectedCondition == null) {
-                // Jeśli stan nie został wybrany, po prostu wyświetl wszystkie zwierzęta
                 showErrorAlert("Please select a condition to filter animals.");
                 return;
             }
@@ -289,16 +272,13 @@ public class UserViewController {
                 return;
             }
 
-            // Zapytanie HQL, które filtruje zwierzęta na podstawie schroniska i stanu
             String hql = "FROM Animal WHERE shelter.id = :shelterId AND condition = :condition";
             var query = session.createQuery(hql, Animal.class);
             query.setParameter("shelterId", selectedShelter.getId());
             query.setParameter("condition", selectedCondition);
 
-            // Wykonanie zapytania
             var filteredAnimals = query.list();
 
-            // Przekształcenie wyników do ObservableList
             ObservableList<Animal> observableList = FXCollections.observableArrayList(filteredAnimals);
             animalTable.setItems(observableList);
 
@@ -340,28 +320,24 @@ public class UserViewController {
                     String phone = data[2];
                     String email = data[3];
 
-                    // Walidacja danych użytkownika
                     validateAdoptionInputs(name, surname, phone, email);
 
-                    // Tworzenie nowego użytkownika i zapisanie go do bazy
                     User user = new User(name, surname);
                     session.save(user);
 
-                    // Ustawienie zwierzęcia jako adoptowane
                     selectedAnimal.setAdopted(true);
-                    selectedAnimal.setCondition(AnimalCondition.ADOPTION); // Zmiana stanu na ADOPTION
+                    selectedAnimal.setCondition(AnimalCondition.ADOPTION);
                     session.update(selectedAnimal);
 
                     transaction.commit();
 
-                    // Wyświetlenie komunikatu o powodzeniu
                     Alert successAlert = new Alert(Alert.AlertType.INFORMATION, "Adoption successful!", ButtonType.OK);
                     successAlert.showAndWait();
 
-                    // Aktualizacja tabeli zwierząt
                     updateAnimalTable(shelterTable.getSelectionModel().getSelectedItem());
                 } catch (AdoptionException e) {
                     showErrorAlert(e.getMessage());
+                    transaction.rollback();
                 }
             });
         } catch (Exception e) {

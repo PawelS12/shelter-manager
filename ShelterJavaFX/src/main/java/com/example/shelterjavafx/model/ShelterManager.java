@@ -8,7 +8,6 @@ import java.util.List;
 public class ShelterManager {
 
     public ShelterManager() {
-        // Konstruktor bez dodatkowych danych, korzystamy z Hibernate do zarządzania
     }
 
     public AnimalShelter getShelter(String name, Session session) {

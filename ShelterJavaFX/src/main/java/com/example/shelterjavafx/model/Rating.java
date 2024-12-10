@@ -16,23 +16,21 @@ public class Rating implements Serializable {
     private Long id;
 
     @Column(name = "value", nullable = false)
-    private int value; // Ocena w skali 0-5
+    private int value;
 
     @ManyToOne
     @JoinColumn(name = "shelter_id", nullable = false)
-    private AnimalShelter shelter; // Schronisko, któremu wystawiono ocenę
+    private AnimalShelter shelter;
 
     @Column(name = "date", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private Date date; // Data wystawienia oceny
+    private Date date;
 
     @Column(name = "comment", nullable = false)
-    private String comment; // Komentarz do oceny
+    private String comment;
 
-    // Konstruktor domyślny
     public Rating() {}
 
-    // Konstruktor z parametrami
     public Rating(int value, AnimalShelter shelter, Date date, String comment) {
         this.value = value;
         this.shelter = shelter;
@@ -40,7 +38,6 @@ public class Rating implements Serializable {
         this.comment = comment;
     }
 
-    // Gettery i settery
     public Long getId() {
         return id;
     }
@@ -82,8 +79,8 @@ public class Rating implements Serializable {
     }
 
     public void addRating(Session session, AnimalShelter shelter, int value, String comment) {
-        Rating rating = new Rating(value, shelter, new Date(), comment);  // Tworzymy nową ocenę
-        shelter.getRatings().add(rating); // Dodajemy ocenę do schroniska
-        session.save(rating); // Zapisujemy ocenę w bazie danych
+        Rating rating = new Rating(value, shelter, new Date(), comment);
+        shelter.getRatings().add(rating);
+        session.save(rating);
     }
 }
