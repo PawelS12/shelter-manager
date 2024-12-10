@@ -14,4 +14,5 @@ The **Shelter Manager** is a Java application to manage a animals shalters.
 ## 3. UI
 
 ![Login](UI_screenshots/LoginPage.png)
+
 ![Admin](UI_screenshots/AdminPage.png)
