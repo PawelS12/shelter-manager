@@ -6,11 +6,11 @@ The **Shelter Manager** is a Java application to manage animal shelters. It prov
 
 ## 2. Technologies
 
-- **Java** – The primary language used for development.
-- **JavaFX** – For the graphical user interface (GUI) that allows users to interact with the shelter data.
-- **Hibernate** – Used for object-relational mapping (ORM) to interact with the database.
-- **SQL** – The database used for storing shelter and animal data.
-- **Spring Boot** – A backend RESTful API for managing shelter data remotely through HTTP requests.
+- **Java**
+- **JavaFX**
+- **Hibernate** 
+- **SQL** 
+- **Spring Boot**
 
 ## 3. Features
 
